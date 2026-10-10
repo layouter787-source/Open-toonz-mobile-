@@ -298,8 +298,9 @@ include_directories(
 if(BUILD_ENV_ANDROID)
     message(FATAL_ERROR
         "Android NDK detected, but the full OpenToonz Android tablet target is not ready. "
-        "The current app still depends on desktop Qt modules and unported native libraries. "
-        "See doc/android_tablet_port_audit.md. This guard prevents a false desktop/Unix build.")
+        "The Android graphics/native-dependency link path is incomplete (including OpenCV, "
+        "OpenGL/GLEW assumptions, and other native libraries). "
+        "See doc/android_tablet_dependency_matrix.md. This guard prevents a false desktop/Unix build.")
 endif()
 
 # Find the QtWidgets library
