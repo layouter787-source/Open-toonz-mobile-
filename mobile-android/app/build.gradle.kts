@@ -4,10 +4,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 android {
-    namespace = "org.opentoonz.mobile"
+    namespace = "com.toonz.tab"
     compileSdk = 35
     defaultConfig {
-        applicationId = "org.opentoonz.mobile"
+        applicationId = "com.toonz.tab"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
