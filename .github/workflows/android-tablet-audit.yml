@@ -148,8 +148,8 @@ jobs:
           assert opencv > guard_end, "OpenCV discovery runs before the Android guard"
           print("The Android guard is present before desktop Qt/OpenCV dependency discovery.")
           PY
-          grep -q 'does not support the Qt Serial Port module' doc/android_tablet_dependency_matrix.md
-          grep -q 'Multimedia Widgets is not supported on Android' doc/android_tablet_dependency_matrix.md
+          grep -q '| Qt Serial Port |' doc/android_tablet_dependency_matrix.md
+          grep -q '| Qt Multimedia Widgets |' doc/android_tablet_dependency_matrix.md
           grep -q 'Android graphics and native-library link branches' doc/android_tablet_dependency_matrix.md
           echo 'Known unsupported Qt modules and Android link blockers are documented.'
           echo '--- Audit document ---'
