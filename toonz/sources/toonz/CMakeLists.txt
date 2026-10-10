@@ -623,7 +623,7 @@ if(BUILD_ENV_APPLE)
 endif()
 
 # copy utility executables onto the directory after build
-if(LZODRIVER_FOUND)
+if(LZODRIVER_FOUND AND NOT BUILD_TARGET_ANDROID)
     add_custom_command(TARGET OpenToonz POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:lzocompress> ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         COMMENT "Copying lzocompress to output dir"
