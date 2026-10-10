@@ -78,7 +78,10 @@
 #include <QAbstractNativeEventFilter>
 #include <QByteArray>
 #include <QSplashScreen>
+#ifndef Q_OS_ANDROID
+// Legacy desktop OpenGL class; the Android renderer path must use GLES-compatible APIs.
 #include <QGLPixelBuffer>
+#endif
 #include <QTranslator>
 #include <QFileInfo>
 #include <QSettings>
