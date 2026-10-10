@@ -49,7 +49,7 @@ jobs:
           grep -nE 'BUILD_ENV_ANDROID|Android NDK detected|Target system is ANDROID' toonz/sources/CMakeLists.txt
           grep -q 'if(ANDROID)' toonz/sources/CMakeLists.txt
           grep -q 'set(BUILD_TARGET_ANDROID ON)' toonz/sources/CMakeLists.txt
-          awk '/if\\(ANDROID\\)/ { android=1 } /set\\(BUILD_TARGET_UNIX ON\\)/ && android { posix=1 } /elseif\\(WIN32\\)/ { android=0 } END { exit !posix }' toonz/sources/CMakeLists.txt
+          awk 'index($0, "if(ANDROID)") { android=1 } index($0, "set(BUILD_TARGET_UNIX ON)") && android { posix=1 } index($0, "elseif(WIN32)") { android=0 } END { exit !posix }' toonz/sources/CMakeLists.txt
           grep -q 'set(BUILD_ENV_ANDROID ON)' toonz/sources/CMakeLists.txt
           grep -q 'Android NDK detected' toonz/sources/CMakeLists.txt
           grep -q 'set(OPEN_TOONZ_QT_MODULES' toonz/sources/CMakeLists.txt
@@ -104,7 +104,7 @@ jobs:
           echo 'CMake parses the platform branch and stops at the documented Android guard, as intended.'
           grep -q 'does not support the Qt Serial Port module' doc/android_tablet_dependency_matrix.md
           grep -q 'Multimedia Widgets is not supported on Android' doc/android_tablet_dependency_matrix.md
-          grep -q 'Android-specific library and link branches' doc/android_tablet_dependency_matrix.md
+          grep -q 'Android graphics and native-library link branches' doc/android_tablet_dependency_matrix.md
           echo 'Known unsupported Qt modules and Android link blockers are documented.'
           echo '--- Audit document ---'
           test -f doc/android_tablet_port_audit.md
