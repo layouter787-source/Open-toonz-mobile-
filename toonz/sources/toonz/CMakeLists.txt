@@ -647,6 +647,21 @@ elseif(BUILD_ENV_APPLE)
         COMMENT "Adding RPATHs to OpenToonz executable"
     )
 
+elseif(BUILD_ENV_ANDROID)
+    # Android keeps the original OpenToonz executable and engine libraries.
+    # This branch is only reached with OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD=ON;
+    # it must not be treated as a verified or release-ready APK path.
+    target_link_libraries(OpenToonz
+        Qt5::Core Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Svg Qt5::Xml
+        Qt5::Script Qt5::Widgets Qt5::Multimedia Qt5::UiTools Qt5::AndroidExtras
+        ${GL_LIB} ${GLU_LIB} ${GLUT_LIB}
+        ${OpenCV_LIBS} ${TURBOJPEG_LIB} ${PNG_LIB} ${JPEG_LIB} ${TIFF_LIB}
+        ${Z_LIB} ${LZ4_LIB} ${SUPERLU_LIB} ${OPENBLAS_LIB}
+        ${MYPAINT_LIB_LIBRARIES} ${Boost_LIBRARIES}
+        tnzcore tnzbase toonzlib colorfx tnzext image sound toonzqt tnztools tnzstdfx tfarm
+    )
+    add_dependencies(OpenToonz tnzcore tnzbase toonzlib colorfx tnzext image sound toonzqt tnztools tnzstdfx tfarm)
+
 elseif(BUILD_ENV_UNIXLIKE)
     _find_toonz_library(EXTRA_LIBS "tnzcore;tnzbase;toonzlib;colorfx;tnzext;image;sound;toonzqt;tnztools")
 
