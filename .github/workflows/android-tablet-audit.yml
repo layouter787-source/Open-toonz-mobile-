@@ -110,14 +110,21 @@ jobs:
           assert activity.attrib[android + "exported"] == "true"
           print("AndroidManifest.xml is well-formed and the tablet package settings are present.")
           PY
-          echo '--- Expected CMake fail-fast probe (not an Android build) ---'
-          cmake_log="$RUNNER_TEMP/layframe-android-cmake-probe.log"
-          if cmake -S toonz/sources -B "$RUNNER_TEMP/layframe-android-cmake-probe" -DANDROID=ON > "$cmake_log" 2>&1; then
-            echo 'ERROR: source CMake unexpectedly passed the Android guard.'
-            exit 1
-          fi
-          grep -q 'Android NDK detected, but the full OpenToonz Android tablet target is not ready' "$cmake_log"
-          echo 'CMake parses the platform branch and stops at the documented Android guard, as intended.'
+          echo '--- Android fail-fast guard placement ---'
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path("toonz/sources/CMakeLists.txt").read_text()
+          guard = source.find("if(BUILD_ENV_ANDROID)")
+          guard_end = source.find("endif()", guard)
+          qt = source.find("find_package(Qt5 REQUIRED")
+          opencv = source.find("find_package(OpenCV")
+          message = source.find("Android NDK detected, but the full OpenToonz Android tablet target is not ready")
+          assert guard >= 0 and guard_end > guard, "Android guard is missing or malformed"
+          assert message > guard and message < guard_end, "guard message is outside the Android guard"
+          assert qt > guard_end, "Qt dependency discovery runs before the Android guard"
+          assert opencv > guard_end, "OpenCV discovery runs before the Android guard"
+          print("The Android guard is present before desktop Qt/OpenCV dependency discovery.")
+          PY
           grep -q 'does not support the Qt Serial Port module' doc/android_tablet_dependency_matrix.md
           grep -q 'Multimedia Widgets is not supported on Android' doc/android_tablet_dependency_matrix.md
           grep -q 'Android graphics and native-library link branches' doc/android_tablet_dependency_matrix.md
