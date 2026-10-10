@@ -6,10 +6,11 @@ concurrency:
 
 on:
   push:
-    branches: [master]
+    branches: [master, main, 'mobile/**']
     paths:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/main.cpp'
+      - 'toonz/sources/toonz/mainwindow.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/toonz/android/AndroidManifest.xml'
       - 'toonz/sources/toonz/penciltestpopup_qt.cpp'
@@ -25,6 +26,7 @@ on:
     paths:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/main.cpp'
+      - 'toonz/sources/toonz/mainwindow.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/toonz/android/AndroidManifest.xml'
       - 'toonz/sources/toonz/penciltestpopup_qt.cpp'
@@ -92,6 +94,22 @@ jobs:
           awk '/kis_tablet_support_win8.h/ { if (previous ~ /#ifdef _WIN32/) found=1 } { previous=$0 } END { exit !found }' toonz/sources/toonz/main.cpp
           awk '/#ifndef Q_OS_ANDROID/ { guarded=1 } /QGLPixelBuffer/ && guarded { found=1 } /#endif/ && guarded { guarded=0 } END { exit !found }' toonz/sources/toonz/main.cpp
           grep -q 'Android tablets use the full landscape activity' toonz/sources/toonz/main.cpp
+          grep -q 'QSurfaceFormat::OpenGLES' toonz/sources/toonz/main.cpp
+          grep -q 'QCoreApplication::setApplicationName("ToonzTab")' toonz/sources/toonz/main.cpp
+          grep -q 'applicationFullName = QStringLiteral("ToonzTab")' toonz/sources/toonz/mainwindow.cpp
+          python3 - <<'PY'
+          from pathlib import Path
+          source = Path("toonz/sources/toonz/main.cpp").read_text()
+          graphics = source.find('Initializing graphics...')
+          android = source.find('#ifdef Q_OS_ANDROID', graphics)
+          desktop = source.find('#else', android)
+          gles = source.find('QSurfaceFormat::OpenGLES', android)
+          glut = source.find('glutInit(&argc, argv);', graphics)
+          assert graphics >= 0 and android > graphics and desktop > android
+          assert gles > android and gles < desktop, "Android startup must select GLES"
+          assert glut > desktop, "Desktop GLUT initialization must remain outside Android branch"
+          print("Android startup keeps desktop GLUT initialization out of the GLES path.")
+          PY
           grep -q '#if !defined(MACOSX) && !defined(Q_OS_ANDROID)' toonz/sources/toonz/main.cpp
           echo 'Windows-only tablet support include is correctly guarded.'
           grep -q 'if(BUILD_TARGET_WIN)' toonz/sources/toonz/CMakeLists.txt
@@ -115,15 +133,15 @@ jobs:
           grep -q '%%INSERT_APP_LIB_NAME%%' toonz/sources/toonz/android/AndroidManifest.xml
           grep -q 'ANDROID_PACKAGE_SOURCE_DIR' toonz/sources/toonz/CMakeLists.txt
           grep -q 'elseif(BUILD_TARGET_ANDROID)' toonz/sources/toonz/CMakeLists.txt
-          grep -q 'LayFrame Studio' toonz/sources/toonz/android/AndroidManifest.xml
-          grep -q 'package="io.github.layframe.studio"' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'ToonzTab' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'package="com.toonz.tab"' toonz/sources/toonz/android/AndroidManifest.xml
           echo 'Qt Android packaging template is tablet/landscape configured and retains androiddeployqt placeholders.'
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
           path = "toonz/sources/toonz/android/AndroidManifest.xml"
           root = ET.parse(path).getroot()
           android = "{http://schemas.android.com/apk/res/android}"
-          assert root.attrib["package"] == "io.github.layframe.studio"
+          assert root.attrib["package"] == "com.toonz.tab"
           application = root.find("application")
           assert application is not None
           activity = application.find("activity")
