@@ -783,13 +783,29 @@ add_subdirectory(image)
 add_subdirectory(toonzqt)
 add_subdirectory(tnztools)
 
-add_subdirectory(${SDKROOT}/lzo/driver lzodriver)
+# The LZO command-line helpers are desktop executables, not Android app
+# components. Do not create them for the tablet target until their functions
+# are integrated in-process or a supported Android execution path exists.
+if(NOT BUILD_TARGET_ANDROID)
+    add_subdirectory(${SDKROOT}/lzo/driver lzodriver)
+endif()
 
 add_subdirectory(toonz)
-add_subdirectory(tcleanupper)
-add_subdirectory(tcomposer)
-add_subdirectory(tconverter)
-add_subdirectory(toonzfarm)
+
+if(BUILD_TARGET_ANDROID)
+    # These desktop helper programs start separate processes and are not part
+    # of the first Android editor target. EXCLUDE_FROM_ALL keeps their targets
+    # available for future port work without building them in the Android app.
+    add_subdirectory(tcleanupper EXCLUDE_FROM_ALL)
+    add_subdirectory(tcomposer EXCLUDE_FROM_ALL)
+    add_subdirectory(tconverter EXCLUDE_FROM_ALL)
+    add_subdirectory(toonzfarm EXCLUDE_FROM_ALL)
+else()
+    add_subdirectory(tcleanupper)
+    add_subdirectory(tcomposer)
+    add_subdirectory(tconverter)
+    add_subdirectory(toonzfarm)
+endif()
 
 if(BUILD_TARGET_WIN)
     add_subdirectory(toonzpreview)
