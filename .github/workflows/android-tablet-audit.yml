@@ -49,6 +49,7 @@ jobs:
           grep -nE 'BUILD_ENV_ANDROID|Android NDK detected|Target system is ANDROID' toonz/sources/CMakeLists.txt
           grep -q 'if(ANDROID)' toonz/sources/CMakeLists.txt
           grep -q 'set(BUILD_TARGET_ANDROID ON)' toonz/sources/CMakeLists.txt
+          awk '/if\\(ANDROID\\)/ { android=1 } /set\\(BUILD_TARGET_UNIX ON\\)/ && android { posix=1 } /elseif\\(WIN32\\)/ { android=0 } END { exit !posix }' toonz/sources/CMakeLists.txt
           grep -q 'set(BUILD_ENV_ANDROID ON)' toonz/sources/CMakeLists.txt
           grep -q 'Android NDK detected' toonz/sources/CMakeLists.txt
           grep -q 'set(OPEN_TOONZ_QT_MODULES' toonz/sources/CMakeLists.txt
