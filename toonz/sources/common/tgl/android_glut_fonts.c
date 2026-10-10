@@ -9,6 +9,9 @@
 #define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
 #include <GL/glext.h>
+#ifndef FGAPIENTRY
+#define FGAPIENTRY
+#endif
 
 /* Keep this adapter independent from FreeGLUT's Android window headers:
    Qt owns EGL, and those headers include GLES2 prototypes that conflict with
