@@ -150,7 +150,7 @@ jobs:
           assert "ANDROID_PACKAGE_SOURCE_DIR" in app_cmake
           assert "Qt5::AndroidExtras" in app_cmake
           assert "elseif(BUILD_ENV_ANDROID)" in app_cmake
-          assert "ToonzAndroidGLUTFonts" in app_cmake
+          assert "${GLUT_LIB}" in app_cmake and "${GLU_LIB}" in app_cmake and "${GL_LIB}" in app_cmake
           assert 'set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android-package")' in app_cmake
           assert 'file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/android/"' in app_cmake
           assert 'file(COPY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/"' in app_cmake
