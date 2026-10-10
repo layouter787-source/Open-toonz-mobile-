@@ -149,8 +149,15 @@ jobs:
           assert "add_executable(OpenToonz" in app_cmake
           assert "ANDROID_PACKAGE_SOURCE_DIR" in app_cmake
           assert "Qt5::AndroidExtras" in app_cmake
-          assert "elseif(BUILD_ENV_ANDROID)" in app_cmake
-          assert "${GLUT_LIB}" in app_cmake and "${GLU_LIB}" in app_cmake and "${GL_LIB}" in app_cmake
+          android_link = app_cmake.find("elseif(BUILD_ENV_ANDROID)")
+          android_link_end = app_cmake.find("elseif(BUILD_ENV_UNIXLIKE)", android_link)
+          assert android_link >= 0 and android_link_end > android_link
+          android_link_block = app_cmake[android_link:android_link_end]
+          assert "target_link_libraries(OpenToonz" in android_link_block
+          assert "Qt5::AndroidExtras" in android_link_block
+          assert "${GLUT_LIB}" in android_link_block and "${GLU_LIB}" in android_link_block and "${GL_LIB}" in android_link_block
+          assert "tnzcore tnzbase toonzlib colorfx tnzext image sound toonzqt tnztools tnzstdfx tfarm" in android_link_block
+          assert "This is only a first-pass link list" in matrix
           assert 'set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android-package")' in app_cmake
           assert 'file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/android/"' in app_cmake
           assert 'file(COPY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/"' in app_cmake
