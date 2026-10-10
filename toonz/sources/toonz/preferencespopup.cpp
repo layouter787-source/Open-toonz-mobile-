@@ -1,6 +1,7 @@
 
 
 #include "preferencespopup.h"
+#include "tgl.h"
 
 // Tnz6 includes
 #include "menubarcommandids.h"
@@ -385,6 +386,7 @@ PreferencesPopup::Display30bitChecker::GLView::GLView(QWidget* parent,
 }
 
 void PreferencesPopup::Display30bitChecker::GLView::initializeGL() {
+  tglInitializeAndroidGLCompat();
   initializeOpenGLFunctions();
   glClear(GL_COLOR_BUFFER_BIT);
 }
