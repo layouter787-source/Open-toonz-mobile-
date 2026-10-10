@@ -32,6 +32,22 @@ TFilePath ToonzFolder::getModulesDir() {
 }
 
 TFilePathSet ToonzFolder::getProjectsFolders() {
+#ifdef Q_OS_ANDROID
+  // The desktop Documents/Desktop choices are not dependable on Android and
+  // do not represent Android's Storage Access Framework. Keep the initial
+  // project root in app-private storage until native document-provider support
+  // is implemented, rather than indexing arbitrary shared-storage paths.
+  TFilePath androidProjectsDir =
+      TEnv::getStuffDir() + TEnv::getSystemPathMap().at("PROJECTS");
+  TFilePathSet androidProjects;
+  if (!androidProjectsDir.isEmpty() &&
+      QDir().mkpath(androidProjectsDir.getQString())) {
+    QDir().mkpath((androidProjectsDir + "library").getQString());
+    QDir().mkpath((androidProjectsDir + "fxs").getQString());
+    androidProjects.push_back(androidProjectsDir);
+  }
+  return androidProjects;
+#endif
   int location = Preferences::instance()->getProjectRoot();
   QString path = Preferences::instance()->getCustomProjectRoot();
   TFilePathSet fps;
