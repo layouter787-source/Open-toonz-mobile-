@@ -27,7 +27,13 @@
 #include <QOffscreenSurface>
 
 // Glew include
+#ifdef Q_OS_ANDROID
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
+#else
 #include <GL/glew.h>
+#endif
 
 // Boost includes
 #include <boost/any.hpp>
