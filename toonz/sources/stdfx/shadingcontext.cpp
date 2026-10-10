@@ -123,8 +123,11 @@ void ShadingContext::Imp::initMatrix(int lx, int ly) {
 
 ShadingContext::ShadingContext(QOffscreenSurface *surface) : m_imp(new Imp) {
   m_imp->m_surface = surface;
+  // Apply the same platform format to the surface before create(); Qt uses
+  // the surface's format when selecting the EGL/OpenGL config on Android.
+  const QSurfaceFormat format = Imp::format();
+  m_imp->m_surface->setFormat(format);
   m_imp->m_surface->create();
-  QSurfaceFormat format;
   m_imp->m_context->setFormat(format);
   m_imp->m_context->create();
   m_imp->m_context->makeCurrent(m_imp->m_surface);
@@ -167,8 +170,7 @@ void ShadingContext::makeCurrent() {
   m_imp->m_context->moveToThread(QThread::currentThread());
   // Not create new context, use existing one
   if (!m_imp->m_context->isValid()) {
-    QSurfaceFormat format;
-    m_imp->m_context->setFormat(format);
+    m_imp->m_context->setFormat(Imp::format());
     m_imp->m_context->create();
   }
   m_imp->m_context->makeCurrent(m_imp->m_surface);
