@@ -56,6 +56,12 @@ jobs:
           awk 'index($0, "if(ANDROID)") { android=1 } index($0, "set(BUILD_TARGET_UNIX ON)") && android { posix=1 } index($0, "elseif(WIN32)") { android=0 } END { exit !posix }' toonz/sources/CMakeLists.txt
           grep -q 'set(BUILD_ENV_ANDROID ON)' toonz/sources/CMakeLists.txt
           grep -q 'Android NDK detected' toonz/sources/CMakeLists.txt
+          grep -q 'if(NOT BUILD_TARGET_ANDROID)' toonz/sources/CMakeLists.txt
+          grep -q 'add_subdirectory(tcleanupper EXCLUDE_FROM_ALL)' toonz/sources/CMakeLists.txt
+          grep -q 'add_subdirectory(tcomposer EXCLUDE_FROM_ALL)' toonz/sources/CMakeLists.txt
+          grep -q 'add_subdirectory(tconverter EXCLUDE_FROM_ALL)' toonz/sources/CMakeLists.txt
+          grep -q 'add_subdirectory(toonzfarm EXCLUDE_FROM_ALL)' toonz/sources/CMakeLists.txt
+          grep -q 'if(LZODRIVER_FOUND AND NOT BUILD_TARGET_ANDROID)' toonz/sources/toonz/CMakeLists.txt
           grep -q 'set(OPEN_TOONZ_QT_MODULES' toonz/sources/CMakeLists.txt
           awk 'index($0, "if(NOT BUILD_TARGET_ANDROID)") { inside=1 } index($0, "list(APPEND OPEN_TOONZ_QT_MODULES") && inside { in_list=1 } index($0, "MultimediaWidgets") && in_list { multimedia_widgets=1 } index($0, "SerialPort") && in_list { serial_port=1 } index($0, "endif()") && inside { inside=0 } END { exit !(multimedia_widgets && serial_port) }' toonz/sources/CMakeLists.txt
           grep -q '#ifdef Q_OS_ANDROID' toonz/sources/stopmotion/stopmotionserial.cpp
