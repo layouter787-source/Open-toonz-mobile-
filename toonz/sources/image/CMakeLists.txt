@@ -14,8 +14,6 @@ set(HEADERS
     svg/tiio_svg.h
     tzl/tiio_tzl.h
     ../include/tnzimage.h
-    mov/tiio_mov_proxy.h
-    3gp/tiio_3gp_proxy.h
     ffmpeg/tiio_gif.h
     ffmpeg/tiio_webm.h
     ffmpeg/tiio_apng.h
@@ -46,8 +44,6 @@ set(SOURCES
     psd/tiio_psd.cpp
     svg/tiio_svg.cpp
     tzl/tiio_tzl.cpp
-    mov/tiio_mov_proxy.cpp
-    3gp/tiio_3gp_proxy.cpp
     ffmpeg/tiio_gif.cpp
     ffmpeg/tiio_webm.cpp
     ffmpeg/tiio_apng.cpp
@@ -100,6 +96,10 @@ elseif(BUILD_TARGET_APPLE)
         mov/tiio_movM.cpp
         3gp/tiio_3gpM.cpp
     )
+elseif(BUILD_TARGET_ANDROID)
+    # The desktop MOV/3GP proxy code starts a separate 32-bit helper process.
+    # Android does not use that desktop helper; MOV/3GP support is registered
+    # only through FFmpeg when the Android package provides a compatible build.
 elseif(BUILD_TARGET_UNIX)
     set(HEADERS ${HEADERS}
         3gp/tiio_3gp_proxy.h
