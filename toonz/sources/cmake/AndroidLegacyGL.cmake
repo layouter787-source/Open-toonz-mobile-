@@ -156,7 +156,10 @@ set_target_properties(ToonzAndroidGLUTFonts PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/opentoonz"
 )
 
-include_directories(BEFORE SYSTEM "${opentoonz_freeglut_SOURCE_DIR}/include")
+include_directories(BEFORE SYSTEM
+    "${CMAKE_CURRENT_LIST_DIR}/../../../thirdparty/glut/3.7.6/include"
+    "${opentoonz_freeglut_SOURCE_DIR}/include"
+)
 
 set(GL_LIB GL)
 set(GLU_LIB ToonzAndroidGLU)
