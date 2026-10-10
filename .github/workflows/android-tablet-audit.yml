@@ -195,6 +195,14 @@ jobs:
           for source in (shader_header, shading_header, shaderfx, shaderinterface, imagepainter):
               assert "#if defined(Q_OS_ANDROID) || defined(__ANDROID__)" in source, "Android GL header guard missing"
           assert "GL_GLEXT_PROTOTYPES" in shader_header and "GL_GLEXT_PROTOTYPES" in imagepainter
+          # The shader context must actually apply its Android GLES format to
+          # both QOffscreenSurface and QOpenGLContext before creating them.
+          assert "const QSurfaceFormat format = Imp::format();" in shading
+          assert "m_imp->m_surface->setFormat(format);" in shading
+          assert "m_imp->m_surface->create();" in shading
+          assert shading.index("m_imp->m_surface->setFormat(format);") < shading.index("m_imp->m_surface->create();")
+          assert "m_imp->m_context->setFormat(format);" in shading
+          assert "m_imp->m_context->setFormat(Imp::format());" in shading
           for path in ("toonz/sources/toonz/sceneviewer.cpp", "toonz/sources/toonz/imageviewer.cpp",
                        "toonz/sources/toonzqt/planeviewer.cpp", "toonz/sources/toonzqt/styleeditor.cpp",
                        "toonz/sources/toonz/preferencespopup.cpp"):
