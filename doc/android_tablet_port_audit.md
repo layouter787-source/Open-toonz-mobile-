@@ -7,7 +7,7 @@ Scope: initial source-level audit; no Android build is claimed.
 ## Findings verified in this source tree
 
 1. The main application is configured from `toonz/sources/CMakeLists.txt`.
-2. The original configuration treated Android as a generic Unix-like target. The current patch adds explicit `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` detection; the complete Android application target and dependency configuration remain unfinished.
+2. The original configuration treated Android as a generic Unix-like target. The current patch adds explicit `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` detection and reuses POSIX-like source selections (`BUILD_TARGET_UNIX`) where the core needs them, while keeping the Android link/dependency environment separate. The complete Android application target remains unfinished.
 3. The CMake Qt module list now conditionally excludes `MultimediaWidgets` and `SerialPort` for Android while retaining them for desktop targets. The remaining Qt modules and their use by the full application still need validation with the selected Android Qt kit.
 4. On 64-bit non-Apple builds, the configuration requires OpenCV. Additional third-party native dependencies and platform assumptions must also be checked for Android compatibility.
 5. The main app entry point `toonz/sources/toonz/main.cpp` includes desktop UI and graphics components. The Windows 8 tablet-support header is guarded by `_WIN32`, its source is selected only for Windows, and the legacy `QGLPixelBuffer` include is guarded for Android. Existing `QTabletEvent` and touchscreen gesture code still needs validation on Android hardware.
