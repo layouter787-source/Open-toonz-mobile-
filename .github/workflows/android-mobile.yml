@@ -1,4 +1,4 @@
-name: Android mobile foundation
+name: Android tablet foundation
 
 on:
   push:
@@ -29,6 +29,6 @@ jobs:
         run: gradle --no-daemon --stacktrace :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: opentoonz-mobile-debug
+          name: toonz-tab-tablet-debug
           path: mobile-android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
