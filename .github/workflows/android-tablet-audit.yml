@@ -8,6 +8,7 @@ on:
       - 'toonz/sources/toonz/main.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'doc/android_tablet_port_audit.md'
+      - 'doc/android_tablet_dependency_matrix.md'
       - '.github/workflows/android-tablet-audit.yml'
   pull_request:
     paths:
@@ -50,6 +51,12 @@ jobs:
           grep -nA18 'find_package(Qt5 REQUIRED' toonz/sources/CMakeLists.txt || true
           echo '--- Desktop/tablet-specific include in main.cpp ---'
           grep -nE 'kis_tablet_support_win8|QGLPixelBuffer|QWindowsWindowFunctions' toonz/sources/toonz/main.cpp || true
+          echo '--- Android dependency blocker matrix ---'
+          test -f doc/android_tablet_dependency_matrix.md
+          grep -q 'does not support the Qt Serial Port module' doc/android_tablet_dependency_matrix.md
+          grep -q 'Multimedia Widgets is not supported on Android' doc/android_tablet_dependency_matrix.md
+          grep -q 'Android-specific library and link branches' doc/android_tablet_dependency_matrix.md
+          echo 'Known unsupported Qt modules and Android link blockers are documented.'
           echo '--- Audit document ---'
           test -f doc/android_tablet_port_audit.md
           echo 'Audit checks passed. This is a source audit only; it does not build an Android APK.'
