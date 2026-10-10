@@ -13,6 +13,7 @@ on:
     paths:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/main.cpp'
+      - 'toonz/sources/toonz/CMakeLists.txt'
       - 'doc/android_tablet_port_audit.md'
       - '.github/workflows/android-tablet-audit.yml'
   workflow_dispatch:
@@ -43,7 +44,7 @@ jobs:
           awk '/kis_tablet_support_win8.h/ { if (previous ~ /#ifdef _WIN32/) found=1 } { previous=$0 } END { exit !found }' toonz/sources/toonz/main.cpp
           echo 'Windows-only tablet support include is correctly guarded.'
           grep -q 'if(BUILD_TARGET_WIN)' toonz/sources/toonz/CMakeLists.txt
-          awk '/if\\(BUILD_TARGET_WIN\\)/ { inside=1 } /list\\(APPEND HEADERS kis_tablet_support_win8.h\\)/ && inside { header=1 } /list\\(APPEND SOURCES kis_tablet_support_win8.cpp\\)/ && inside { source=1 } /^endif\\(\\)/ && inside { inside=0 } END { exit !(header && source) }' toonz/sources/toonz/CMakeLists.txt
+          awk 'index($0, "if(BUILD_TARGET_WIN)") { inside=1 } index($0, "list(APPEND HEADERS kis_tablet_support_win8.h)") && inside { header=1 } index($0, "list(APPEND SOURCES kis_tablet_support_win8.cpp)") && inside { source=1 } index($0, "endif()") && inside { inside=0 } END { exit !(header && source) }' toonz/sources/toonz/CMakeLists.txt
           echo 'Windows-only tablet implementation is selected only for Windows.'
           echo '--- Qt modules currently required ---'
           grep -nA18 'find_package(Qt5 REQUIRED' toonz/sources/CMakeLists.txt || true
