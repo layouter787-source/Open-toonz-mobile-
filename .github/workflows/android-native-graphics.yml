@@ -8,6 +8,8 @@ on:
       - 'ci/android/graphics-probe/**'
       - 'toonz/sources/common/tgl/tgl.cpp'
       - 'toonz/sources/include/tgl.h'
+      - 'toonz/sources/common/tgl/android_glut_fonts.c'
+      - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
       - '.github/workflows/android-native-graphics.yml'
   pull_request:
     paths:
@@ -54,6 +56,7 @@ jobs:
           find build/android-graphics-arm64 -type f \( -name 'libGL.a' -o -name 'libToonzAndroidGLU.a' -o -name 'toonz_android_gl_probe' \) -print
           test -n "$(find build/android-graphics-arm64 -name 'libGL.a' -print -quit)"
           test -n "$(find build/android-graphics-arm64 -name 'libToonzAndroidGLU.a' -print -quit)"
+          test -n "$(find build/android-graphics-arm64 -name 'libToonzAndroidGLUTFonts.a' -print -quit)"
           test -n "$(find build/android-graphics-arm64 -name 'toonz_android_gl_probe' -print -quit)"
 
       - name: Upload cross-linked compatibility libraries (not an app APK)
@@ -63,4 +66,5 @@ jobs:
           path: |
             build/android-graphics-arm64/lib/opentoonz/libGL.a
             build/android-graphics-arm64/lib/opentoonz/libToonzAndroidGLU.a
+            build/android-graphics-arm64/lib/opentoonz/libToonzAndroidGLUTFonts.a
           if-no-files-found: warn
