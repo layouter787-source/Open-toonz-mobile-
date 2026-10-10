@@ -458,8 +458,19 @@ endif()
 
 qt5_wrap_cpp(SOURCES ${MOC_HEADERS})
 
+# Qt 5.15 androiddeployqt copies this directory into the Android packaging
+# tree. The top-level CMake guard remains enabled until the Android link branch
+# and all required ABI-compatible libraries are ready.
+if(BUILD_TARGET_ANDROID)
+    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android" CACHE PATH
+        "Android package template directory for LayFrame Studio")
+endif()
+
 if(BUILD_ENV_MSVC)
     add_executable(OpenToonz WIN32 ${HEADERS} ${SOURCES} ${OBJCSOURCES} ${RESOURCES} ${RC_FILE})
+elseif(BUILD_TARGET_ANDROID)
+    add_executable(OpenToonz ${HEADERS} ${SOURCES} ${OBJCSOURCES} ${RESOURCES})
+    add_dependencies(OpenToonz tnzcore tnzbase toonzlib colorfx tnzext image sound toonzqt tnztools tnzstdfx tfarm)
 else()
     set(MACOSX_BUNDLE_ICON_FILE "OpenToonz.icns")
     set_source_files_properties(OpenToonz.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
