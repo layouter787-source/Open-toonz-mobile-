@@ -13,6 +13,10 @@ if(CMAKE_VERSION VERSION_LESS 3.14)
     message(FATAL_ERROR "The Android legacy-GL backend requires CMake 3.14 or newer for FetchContent.")
 endif()
 
+# OpenToonz' top-level project still has a 3.10 minimum. The GL4ES target is
+# created in a FetchContent subdirectory and linked from this parent directory.
+cmake_policy(SET CMP0079 NEW)
+
 include(FetchContent)
 
 # GL4ES is MIT-licensed and translates the legacy OpenGL fixed-function API
