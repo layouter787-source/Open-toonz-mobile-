@@ -1,4 +1,4 @@
-package org.opentoonz.mobile
+package com.toonz.tab
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -49,7 +49,7 @@ private fun MobileEditor() {
     Surface(Modifier.fillMaxSize(), color = Color(0xFF202226)) {
         Column(Modifier.fillMaxSize().padding(8.dp)) {
             Row(Modifier.fillMaxWidth().height(44.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("OpenToonz / Mobile", color = Color.White, fontSize = 16.sp)
+                Text("ToonzTab", color = Color.White, fontSize = 16.sp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = { if (strokes.isNotEmpty()) { redo = redo + strokes.last(); strokes = strokes.dropLast(1) } }) { Text("Undo") }
                     TextButton(onClick = { if (redo.isNotEmpty()) { strokes = strokes + redo.last(); redo = redo.dropLast(1) } }) { Text("Redo") }
