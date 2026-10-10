@@ -26,7 +26,7 @@ The current full OpenToonz target should not be sent directly to an Android NDK 
 ## Next implementation sequence
 
 - Pin and validate a compatible Qt-for-Android version, SDK/NDK, JDK, and ABI; then replace the current fail-fast guard with a tested Android-specific configuration.
-- Audit each required Qt module and third-party library against that toolchain; replace or disable unsupported optional modules only when the code permits it.
+- Use [the dependency matrix](android_tablet_dependency_matrix.md) to gate unsupported Qt Serial Port / Multimedia Widgets uses, add Android-compatible native dependencies, and implement an Android-specific target/link branch before removing the CMake guard.
 - Separate Windows-only tablet support from generic Qt tablet/stylus input.
 - Adapt the application shell for landscape tablets with touch-sized tools, canvas, layers/properties, and timeline/Xsheet.
 - Integrate the original animation core incrementally, resolving compile and runtime blockers in order.
