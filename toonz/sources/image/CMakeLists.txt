@@ -56,6 +56,19 @@ set(SOURCES
     tzm/tiio_tzm.cpp
 )
 
+# Keep the legacy proxy implementation available to desktop x64 builds
+# (including 64-bit Windows where the QuickTime-specific source is empty).
+# Android excludes these sources because they launch a separate 32-bit helper.
+if(NOT BUILD_TARGET_ANDROID)
+    list(APPEND HEADERS
+        mov/tiio_mov_proxy.h
+        3gp/tiio_3gp_proxy.h
+    )
+    list(APPEND SOURCES
+        mov/tiio_mov_proxy.cpp
+        3gp/tiio_3gp_proxy.cpp
+    )
+endif()
 
 # Can't build this on FreeBSD: libtiff requires internal API access.
 # Probably some one get luck to fix this.
