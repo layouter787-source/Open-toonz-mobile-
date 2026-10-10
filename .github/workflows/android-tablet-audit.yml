@@ -55,6 +55,7 @@ jobs:
               "toonz/sources/toonz/CMakeLists.txt",
               "toonz/sources/toonz/main.cpp",
               "toonz/sources/common/tapptools/tenv.cpp",
+              "toonz/sources/toonzlib/toonzfolders.cpp",
               "toonz/sources/toonz/mainwindow.cpp",
               "toonz/sources/toonz/android/AndroidManifest.xml",
               "doc/android_tablet_port_audit.md",
@@ -69,6 +70,7 @@ jobs:
           app_cmake = Path("toonz/sources/toonz/CMakeLists.txt").read_text()
           main = Path("toonz/sources/toonz/main.cpp").read_text()
           tenv = Path("toonz/sources/common/tapptools/tenv.cpp").read_text()
+          folders = Path("toonz/sources/toonzlib/toonzfolders.cpp").read_text()
           window = Path("toonz/sources/toonz/mainwindow.cpp").read_text()
           matrix = Path("doc/android_tablet_dependency_matrix.md").read_text()
           audit = Path("doc/android_tablet_port_audit.md").read_text()
@@ -122,7 +124,9 @@ jobs:
           assert 'assets:/stuff-manifest.txt' in tenv
           assert 'assets:/stuff/' in tenv
           assert "copyAndroidStuffAssets" in tenv
-          print("PASS: Android startup/branding is separate from desktop GLUT and initializes the writable stuff tree and config from assets.")
+          assert "TEnv::getStuffDir() + TEnv::getSystemPathMap().at(\"PROJECTS\")" in folders
+          assert "app-private storage" in folders
+          print("PASS: Android startup, private runtime data/config and project storage are selected independently of desktop paths.")
 
           # Validate the actual Qt Android deployment template.
           manifest_path = "toonz/sources/toonz/android/AndroidManifest.xml"
