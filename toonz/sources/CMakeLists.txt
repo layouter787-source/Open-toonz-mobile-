@@ -17,20 +17,27 @@ set(_init_vars)
 
 #-----------------------------------------------------------------------------
 # Select build target
-set(BUILD_TARGET_WIN       OFF)
-set(BUILD_TARGET_APPLE     OFF)
-set(BUILD_TARGET_UNIX      OFF)
-if(WIN32)
-    set(BUILD_TARGET_WIN    ON)
+# Android must be identified before the generic UNIX branch. The application
+# configuration below is still desktop-oriented; do not silently classify an
+# Android NDK build as a regular Linux build.
+set(BUILD_TARGET_ANDROID  OFF)
+set(BUILD_TARGET_WIN      OFF)
+set(BUILD_TARGET_APPLE    OFF)
+set(BUILD_TARGET_UNIX     OFF)
+if(ANDROID)
+    set(BUILD_TARGET_ANDROID ON)
+    message(STATUS "Target system is ANDROID")
+elseif(WIN32)
+    set(BUILD_TARGET_WIN ON)
     message(STATUS "Target system is WIN")
 elseif(APPLE)
-    set(BUILD_TARGET_APPLE  ON)
+    set(BUILD_TARGET_APPLE ON)
     message(STATUS "Target system is APPLE")
 elseif(UNIX)
-    set(BUILD_TARGET_UNIX   ON)
+    set(BUILD_TARGET_UNIX ON)
     message(STATUS "Target system is UNIX")
 else()
-    set(BUILD_TARGET_UNIX   ON)
+    set(BUILD_TARGET_UNIX ON)
     message(WARNING "Target system unknown, set UNIX by default")
     message(STATUS "Target system is UNIX (actually unknown)")
 endif()
@@ -38,10 +45,14 @@ endif()
 #-----------------------------------------------------------------------------
 # Select build environment
 
+set(BUILD_ENV_ANDROID OFF)
 set(BUILD_ENV_MSVC     OFF)
 set(BUILD_ENV_APPLE    OFF)
 set(BUILD_ENV_UNIXLIKE OFF)
-if(MSVC)
+if(ANDROID)
+    set(BUILD_ENV_ANDROID ON)
+    message(STATUS "Build environment is Android NDK")
+elseif(MSVC)
     set(BUILD_ENV_MSVC ON)
     if(NOT BUILD_TARGET_WIN)
         message(WARNING "Build environment is MSVC, but target system is not WIN")
@@ -279,6 +290,17 @@ endif()
 include_directories(
     include
   )
+
+# The full OpenToonz app still requests desktop-only Qt modules and third-party
+# libraries below. Stop Android configuration here until a dedicated mobile
+# dependency set and app target have been implemented; otherwise CMake may
+# proceed as if this were a desktop build and report misleading errors.
+if(BUILD_ENV_ANDROID)
+    message(FATAL_ERROR
+        "Android NDK detected, but the full OpenToonz Android tablet target is not ready. "
+        "The current app still depends on desktop Qt modules and unported native libraries. "
+        "See doc/android_tablet_port_audit.md. This guard prevents a false desktop/Unix build.")
+endif()
 
 # Find the QtWidgets library
 find_package(Qt5 REQUIRED
