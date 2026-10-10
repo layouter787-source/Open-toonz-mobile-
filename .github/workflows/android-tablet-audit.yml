@@ -129,7 +129,7 @@ jobs:
           assert "set(BUILD_ENV_ANDROID ON)" in top
 
           # Keep the fail-fast guard until the complete dependency/link path is ready.
-          anchor = top.find("# The full OpenToonz app still requests desktop-only Qt modules")
+          anchor = top.find("# Keep the safe default fail-fast behavior")
           guard = top.find("if(BUILD_ENV_ANDROID)", anchor)
           guard_end = top.find("endif()", guard)
           qt_discovery = top.find("find_package(Qt5 REQUIRED")
@@ -140,13 +140,17 @@ jobs:
           assert anchor >= 0 and guard > anchor and guard_end > guard
           assert guard < guard_message < guard_end
           assert guard_end < qt_discovery and guard_end < opencv_discovery
-          print("PASS: Android is explicit and native configuration fails safely before unsupported dependencies.")
+          assert "OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD" in top
+          assert 'include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AndroidLegacyGL.cmake")' in top
+          print("PASS: Android remains fail-fast by default; an explicit experimental switch enables the original native graphics path.")
 
           # The original OpenToonz executable target remains the Android target.
           assert "elseif(BUILD_TARGET_ANDROID)" in app_cmake
           assert "add_executable(OpenToonz" in app_cmake
           assert "ANDROID_PACKAGE_SOURCE_DIR" in app_cmake
           assert "Qt5::AndroidExtras" in app_cmake
+          assert "elseif(BUILD_ENV_ANDROID)" in app_cmake
+          assert "ToonzAndroidGLUTFonts" in app_cmake
           assert 'set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android-package")' in app_cmake
           assert 'file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/android/"' in app_cmake
           assert 'file(COPY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/"' in app_cmake
