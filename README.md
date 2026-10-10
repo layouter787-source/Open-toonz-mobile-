@@ -1,34 +1,42 @@
-# ToonzTab — OpenToonz for Android tablets
+# ToonzTab — OpenToonz para tablets Android
 
-**ToonzTab** is the working name for this independent adaptation of the OpenToonz 2D animation project, focused exclusively on Android tablets in landscape orientation. The original OpenToonz source tree is retained as the long-term engine foundation.
+**ToonzTab** é o nome de trabalho desta adaptação do OpenToonz para tablets Android em orientação horizontal. A base do produto deve continuar a ser o código original C++/Qt e o motor de animação do OpenToonz — não uma aplicação redesenhada do zero.
 
-> **Development status:** the Android app in `mobile-android/` is an early Kotlin/Compose interaction prototype. It is not yet the full OpenToonz C++ engine, does not open native OpenToonz scenes or levels, and must not be treated as a finished animation app. A successful installable Android build has not yet been verified.
+> **Estado real (10 de outubro de 2026):** a adaptação nativa está em desenvolvimento. Ainda não há compilação Android bem-sucedida do OpenToonz completo nem APK verificado com o motor original.
 
-## Product direction
+## Direção do projeto
 
-- **Target:** Android tablets only; phones are intentionally out of scope.
-- **Workspace:** landscape-first layout, a large drawing canvas, touch-sized tools, timeline/frame strip, and room for levels and panels.
-- **Long-term engine:** preserve and progressively adapt the OpenToonz C++ animation core and its supported dependencies; do not replace the project with an unrelated drawing app.
-- **Android prototype:** `mobile-android/` contains the separate Android UI prototype and its Gradle project.
-- **Build validation:** `.github/workflows/android-mobile.yml` attempts to build a debug APK and upload it as a GitHub Actions artifact. The artifact is available only if the workflow succeeds.
-- **Identity:** ToonzTab is a working name for this adaptation, not an official OpenToonz release.
+- **Dispositivo:** tablets Android; telemóveis ficam fora do alvo inicial.
+- **Base técnica:** manter o código nativo em `toonz/sources/`, incluindo cenas, levels, Xsheet/timeline, ferramentas e renderização sempre que for possível portá-los.
+- **Interface:** adaptar a interface original para ecrã horizontal, toque e caneta digital. A adaptação deve acontecer na aplicação nativa existente.
+- **Identidade Android:** ToonzTab, pacote `com.toonz.tab`, com orientação horizontal definida no manifesto Qt.
+- **Compilação:** o projeto usa CMake/Qt e já contém deteção de Android e algumas seleções de código específicas da plataforma. O CMake mantém deliberadamente uma barreira de segurança porque a ligação das dependências nativas e o caminho gráfico Android ainda não estão concluídos.
 
-## Current Android prototype
+## Trabalho nativo já iniciado
 
-Implemented in the current branch: tablet-landscape shell, frame-specific sketch strokes, pencil/eraser drawing, basic per-frame undo/redo, frame selection, approximate 12 FPS playback, and a simple previous-frame onion-skin overlay.
+- A entrada original `toonz/sources/toonz/main.cpp` começa a separar a configuração gráfica de Android (EGL/OpenGL ES) da inicialização desktop que usa GLUT/legacy `QGLFormat`.
+- A identidade ToonzTab é aplicada ao processo Qt Android e ao título da janela nativa.
+- O manifesto Android nativo define o pacote `com.toonz.tab`, orientação horizontal e configuração de ecrãs de tablet.
+- Existem auditorias e uma matriz de dependências para acompanhar os pontos que ainda bloqueiam a compilação.
 
-Not implemented yet: persistent project files, lasso selection, transform/move tools, stylus pressure, layers, audio, import/export, rendering, native OpenToonz scene/level compatibility, and integration of the C++ engine. Read [the Android prototype status and roadmap](./mobile-android/README.md).
+Estas alterações **não significam** que o motor compile ou já funcione no Android. O código de renderização tem outras dependências e APIs OpenGL de desktop que ainda precisam de ser auditadas, portadas e testadas.
 
-## Porting principles
+## Bloqueios principais
 
-1. Keep the upstream desktop source intact while isolating Android-specific work.
-2. Audit upstream build scripts, third-party libraries, Qt modules, and platform assumptions before attempting an NDK port.
-3. Add native integration incrementally and validate each dependency on Android; a Kotlin UI alone is not an OpenToonz port.
-4. Publish an APK as a usable build only after CI succeeds and the app is tested on a real Android tablet.
-5. Preserve upstream copyright notices, license files, and third-party attribution.
+1. Criar um ambiente reproduzível com Qt for Android, SDK/NDK, JDK, CMake e ABI ARM64.
+2. Preparar versões Android das bibliotecas nativas exigidas pelo motor e introduzir uma configuração de ligação específica para Android.
+3. Adaptar e validar a renderização para OpenGL ES e resolver dependências desktop que não existem no NDK.
+4. Adaptar o acesso a ficheiros/projetos e a interação do editor a tablets Android.
+5. Compilar a aplicação nativa, instalar num tablet físico e testar desenho com caneta, cenas, gravação/abertura, timeline, efeitos e exportação antes de declarar funcionalidades como prontas.
 
-## Upstream and licensing
+## Auditoria e documentação
 
-This project is based on [OpenToonz](https://github.com/opentoonz/opentoonz), an open-source 2D animation program published by DWANGO and based on Toonz technology. It is an independent adaptation, not an official OpenToonz release.
+- [Roteiro do port nativo](./doc/tablet_port_roadmap.md)
+- [Matriz de dependências Android](./doc/android_tablet_dependency_matrix.md)
+- [Auditoria de código-fonte Android](./doc/android_tablet_port_audit.md)
 
-OpenToonz source files and bundled third-party components have their own license notices. Review [LICENSE.txt](./LICENSE.txt) and the relevant third-party notices before redistributing any source or binary. Keep all required attribution and license files in derivative distributions.
+A auditoria estática verifica condições do código e do manifesto; não é uma compilação do APK.
+
+## Origem e licença
+
+Este projeto deriva do [OpenToonz](https://github.com/opentoonz/opentoonz), um programa de animação 2D de código aberto. Esta é uma adaptação independente, não uma versão oficial do OpenToonz. Preservar `LICENSE.txt`, os avisos de direitos de autor e as licenças dos componentes de terceiros ao distribuir código ou binários.
