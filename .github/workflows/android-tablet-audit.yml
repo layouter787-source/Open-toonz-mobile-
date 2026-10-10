@@ -97,6 +97,11 @@ jobs:
           test -f doc/android_tablet_dependency_matrix.md
           test -f toonz/sources/toonz/android/AndroidManifest.xml
           grep -q 'android:screenOrientation="landscape"' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'android.permission.CAMERA' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'android.hardware.camera' toonz/sources/toonz/android/AndroidManifest.xml
+          bash -n ci/android/fetch-opencv-android-sdk.sh
+          grep -q 'e8cfaf2e51f2e2127a6ede91718d1ef7587f8b6e62db922816e7c33a1f1116a7' ci/android/fetch-opencv-android-sdk.sh
+          grep -q 'OpenCVConfig.cmake' ci/android/fetch-opencv-android-sdk.sh
           grep -q 'android:smallScreens="false"' toonz/sources/toonz/android/AndroidManifest.xml
           grep -q 'android:name="android.app.lib_name"' toonz/sources/toonz/android/AndroidManifest.xml
           grep -q '%%INSERT_APP_LIB_NAME%%' toonz/sources/toonz/android/AndroidManifest.xml

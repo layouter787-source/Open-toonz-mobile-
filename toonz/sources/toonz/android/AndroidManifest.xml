@@ -7,9 +7,13 @@
     android:versionCode="-- %%INSERT_VERSION_CODE%% --"
     android:installLocation="auto">
 
-    <!-- Qt/androiddeployqt inserts required permissions and features here. -->
+    <!-- Qt/androiddeployqt inserts additional permissions and features here. -->
     <!-- %%INSERT_PERMISSIONS -->
     <!-- %%INSERT_FEATURES -->
+
+    <!-- Needed by the tablet pencil-test / stop-motion camera pipeline. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <!-- This edition targets landscape-oriented tablets; small-screen devices are excluded. -->
     <supports-screens

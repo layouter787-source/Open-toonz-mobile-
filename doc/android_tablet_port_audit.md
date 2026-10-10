@@ -21,7 +21,7 @@ The application CMake now adds the Windows Pointer Input adapter only to Windows
 
 The GitHub Actions source audit checks Android platform detection, the fail-fast guard, the Windows-only pen adapter, Android Qt-module exclusions, the serial fallback, and the dependency matrix.
 
-The Android path also excludes desktop-only helper executables from the default build, omits legacy MOV/3GP proxy sources that launch a separate 32-bit helper, and leaves out the traditional `QPrinter`/`QPrintDialog` command. The separate Xsheet PDF exporter remains in the source list and uses `QPdfWriter`. These changes remove desktop assumptions from the Android path; they do not yet demonstrate that the full engine compiles.
+The Android path also excludes desktop-only helper executables from the default build, omits legacy MOV/3GP proxy sources that launch a separate 32-bit helper, and leaves out the traditional `QPrinter`/`QPrintDialog` command. The separate Xsheet PDF exporter remains in the source list and uses `QPdfWriter`. The manifest declares camera permission and the project now has a checksum-pinned script for preparing the OpenCV Android SDK. These changes remove desktop assumptions and prepare a dependency; they do not yet demonstrate that the full engine compiles.
 
 ## Consequence
 
