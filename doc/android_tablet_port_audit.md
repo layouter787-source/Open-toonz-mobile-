@@ -10,14 +10,14 @@ Scope: initial source-level audit; no Android build is claimed.
 2. The original configuration treated Android as a generic Unix-like target. The current patch adds explicit `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` detection; the complete Android application target and dependency configuration remain unfinished.
 3. The existing CMake configuration requires a broad desktop Qt 5 module set: Core, Gui, Network, OpenGL, Svg, Xml, Script, Widgets, PrintSupport, LinguistTools, Multimedia, MultimediaWidgets, SerialPort, and UiTools.
 4. On 64-bit non-Apple builds, the configuration requires OpenCV. Additional third-party native dependencies and platform assumptions must also be checked for Android compatibility.
-5. The main app entry point `toonz/sources/toonz/main.cpp` includes desktop UI and graphics components and the `kis_tablet_support_win8.h` tablet-support header. That header and any related Windows-specific code must be isolated behind platform checks or replaced with Qt Android input handling.
+5. The main app entry point `toonz/sources/toonz/main.cpp` includes desktop UI and graphics components. The Windows 8 tablet-support header is now guarded by `_WIN32`, matching the existing Windows-only use of `KisTabletSupportWin8`; Android still needs its own Qt tablet/stylus input handling and several desktop graphics assumptions remain.
 6. The repository's existing documented build paths target Windows, macOS, Linux, and BSD; they do not provide an Android/Qt Creator APK build path.
 
 ## Implementation progress — 2026-10-10
 
 The top-level CMake configuration has now been changed to detect `ANDROID` before the generic `UNIX` branch and set dedicated `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` flags. Until an Android-specific Qt and native-dependency set exists, configuration stops with a clear fatal message before requesting the desktop Qt module bundle. This is a guardrail and a platform-detection fix only; it does **not** mean that OpenToonz builds or runs on Android yet.
 
-The GitHub Actions source audit now checks that this Android branch and fail-fast guard remain present.
+The GitHub Actions source audit now checks the Android branch, fail-fast guard, and Windows-only tablet-header guard.
 
 ## Consequence
 
