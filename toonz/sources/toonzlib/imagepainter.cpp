@@ -1,5 +1,11 @@
-// Glew include
+// GLEW is desktop-only; Android uses the GL4ES compatibility headers.
+#ifdef Q_OS_ANDROID
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
+#else
 #include <GL/glew.h>
+#endif
 
 #include "toonz/imagepainter.h"
 // Include shared flipbook background toggle settings (e.g., for m_bg) from
@@ -227,7 +233,7 @@ void Painter::flushRasterImages(const TRect &loadbox, double compareX,
   glDisable(GL_LOGIC_OP);
   glDisable(GL_STENCIL_TEST);
 
-#ifdef GL_EXT_convolution
+#if defined(GL_EXT_convolution) && !defined(Q_OS_ANDROID)
   if (GLEW_EXT_convolution) {
     glDisable(GL_CONVOLUTION_1D_EXT);
     glDisable(GL_CONVOLUTION_2D_EXT);
@@ -235,7 +241,7 @@ void Painter::flushRasterImages(const TRect &loadbox, double compareX,
   }
 #endif
 
-#ifdef GL_EXT_histogram
+#if defined(GL_EXT_histogram) && !defined(Q_OS_ANDROID)
   if (GLEW_EXT_histogram) {
     glDisable(GL_HISTOGRAM_EXT);
     glDisable(GL_MINMAX_EXT);
