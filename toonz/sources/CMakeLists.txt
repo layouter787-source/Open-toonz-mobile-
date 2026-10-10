@@ -383,7 +383,23 @@ endif()
 
 
 if(PLATFORM EQUAL 64)
-    if(BUILD_ENV_UNIXLIKE)
+    if(BUILD_TARGET_ANDROID)
+        # Never let a cross-build discover a host OpenCV installation. The
+        # Android SDK must contain ABI-specific imported targets/libraries.
+        if(NOT OpenCV_DIR)
+            message(FATAL_ERROR
+                "ToonzTab requires the OpenCV Android SDK. Set "
+                "OPEN_TOONZ_ANDROID_OPENCV_ROOT to the extracted SDK root "
+                "(containing sdk/native/jni/OpenCVConfig.cmake), or set OpenCV_DIR "
+                "to that sdk/native/jni directory.")
+        endif()
+        find_package(OpenCV 4.1 REQUIRED CONFIG)
+        if(NOT OpenCV_FOUND OR NOT OpenCV_LIBS)
+            message(FATAL_ERROR
+                "The configured OpenCV package did not provide Android libraries. "
+                "Check OPEN_TOONZ_ANDROID_OPENCV_ROOT and the selected Android ABI.")
+        endif()
+    elseif(BUILD_ENV_UNIXLIKE)
         find_package(OpenCV REQUIRED)
     else() # Windows and MacOS case
         find_package(OpenCV 4.1 REQUIRED)
