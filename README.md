@@ -10,6 +10,7 @@
 - **Base técnica:** manter o código nativo em `toonz/sources/`, incluindo cenas, levels, Xsheet/timeline, ferramentas e renderização sempre que for possível portá-los.
 - **Interface:** adaptar a interface original para ecrã horizontal, toque e caneta digital. A adaptação deve acontecer na aplicação nativa existente.
 - **Identidade Android:** ToonzTab, pacote `com.toonz.tab`, com orientação horizontal definida no manifesto Qt.
+- **Dados do motor:** o caminho CMake nativo prepara o `stuff/` original como assets e `TEnv` copia esses ficheiros para o armazenamento privado no primeiro arranque. Essa parte ainda não foi validada num APK porque o bloqueio de dependências continua ativo.
 - **Compilação:** o projeto usa CMake/Qt e já contém deteção de Android e algumas seleções de código específicas da plataforma. O CMake mantém deliberadamente uma barreira de segurança porque a ligação das dependências nativas e o caminho gráfico Android ainda não estão concluídos.
 
 ## Trabalho nativo já iniciado
