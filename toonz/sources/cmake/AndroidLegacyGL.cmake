@@ -147,6 +147,9 @@ target_compile_definitions(ToonzAndroidGLUTFonts PRIVATE
     FREEGLUT_GLES
     TARGET_HOST_ANDROID
 )
+# The upstream Android private header uses C's bool type without including
+# stdbool.h when compiling its stroke-font data as C.
+target_compile_options(ToonzAndroidGLUTFonts PRIVATE -include stdbool.h)
 target_link_libraries(ToonzAndroidGLUTFonts PUBLIC GL)
 set_target_properties(ToonzAndroidGLUTFonts PROPERTIES
     POSITION_INDEPENDENT_CODE ON
