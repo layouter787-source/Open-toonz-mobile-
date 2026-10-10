@@ -1,5 +1,5 @@
 // GLEW is desktop-only; Android uses the GL4ES compatibility headers.
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
 #define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -233,7 +233,7 @@ void Painter::flushRasterImages(const TRect &loadbox, double compareX,
   glDisable(GL_LOGIC_OP);
   glDisable(GL_STENCIL_TEST);
 
-#if defined(GL_EXT_convolution) && !defined(Q_OS_ANDROID)
+#if defined(GL_EXT_convolution) && !defined(Q_OS_ANDROID) && !defined(__ANDROID__)
   if (GLEW_EXT_convolution) {
     glDisable(GL_CONVOLUTION_1D_EXT);
     glDisable(GL_CONVOLUTION_2D_EXT);
@@ -241,7 +241,7 @@ void Painter::flushRasterImages(const TRect &loadbox, double compareX,
   }
 #endif
 
-#if defined(GL_EXT_histogram) && !defined(Q_OS_ANDROID)
+#if defined(GL_EXT_histogram) && !defined(Q_OS_ANDROID) && !defined(__ANDROID__)
   if (GLEW_EXT_histogram) {
     glDisable(GL_HISTOGRAM_EXT);
     glDisable(GL_MINMAX_EXT);
