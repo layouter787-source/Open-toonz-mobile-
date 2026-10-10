@@ -1305,6 +1305,7 @@ void SceneViewer::onPreferenceChanged(const QString &prefName) {
 
 //-----------------------------------------------------------------------------
 void SceneViewer::initializeGL() {
+  tglInitializeAndroidGLCompat();
   initializeOpenGLFunctions();
 
   registerContext();
