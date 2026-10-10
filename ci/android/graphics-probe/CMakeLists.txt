@@ -10,7 +10,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 include("${CMAKE_CURRENT_LIST_DIR}/../../../toonz/sources/cmake/AndroidLegacyGL.cmake")
 
 add_executable(toonz_android_gl_probe main.cpp)
-target_link_libraries(toonz_android_gl_probe PRIVATE ToonzAndroidGLU GL)
+target_link_libraries(toonz_android_gl_probe PRIVATE
+    ToonzAndroidGLU
+    GL
+    ${OPEN_TOONZ_EGL_LIBRARY}
+)
 
 # This is a native cross-link probe only. Do not execute the binary on the host:
 # GL4ES initialization requires a live Android GLES context owned by Qt.
