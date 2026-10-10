@@ -629,6 +629,7 @@ TFilePath TEnv::getConfigDir() {
 #if !defined(_WIN32) && !defined(MACOSX)
 namespace {
 
+#ifndef Q_OS_ANDROID
 // TSystem::copyDir() ignores mkdir/copy failures, so recurse and report here.
 bool copyDirOrFail(const QString &dst, const QString &src) {
   if (!QDir().mkpath(dst)) return false;
@@ -652,6 +653,7 @@ TFilePath getInstalledStuffDir() {
   TFilePath exeDir(QCoreApplication::applicationDirPath().toStdWString());
   return exeDir.getParentDir() + "share" + "opentoonz" + "stuff";
 }
+#endif
 
 // Derived from the ini TEnv reads; Android keeps this data in the app sandbox.
 TFilePath getUserStuffDir(EnvGlobals *eg) {
