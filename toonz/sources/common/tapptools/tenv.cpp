@@ -679,9 +679,10 @@ bool copyAndroidStuffAssets(const QString &destination) {
   QTextStream entries(&manifest);
   entries.setCodec("UTF-8");
   while (!entries.atEnd()) {
-    const QString relativePath =
-        QDir::cleanPath(QDir::fromNativeSeparators(entries.readLine()));
-    if (relativePath.isEmpty()) continue;
+    const QString manifestLine = entries.readLine();
+    if (manifestLine.isEmpty()) continue;
+    const QString relativePath = QDir::cleanPath(
+        QDir::fromNativeSeparators(manifestLine));
     if (relativePath == "." || relativePath == ".." ||
         relativePath.startsWith("../") || QDir::isAbsolutePath(relativePath)) {
       std::cerr << "Invalid path in ToonzTab stuff manifest: "
