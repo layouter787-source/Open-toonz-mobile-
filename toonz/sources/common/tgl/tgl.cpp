@@ -9,7 +9,7 @@
 #include "tcurves.h"
 
 #include <mutex>
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
 #include <EGL/egl.h>
 #include <gl4esinit.h>
 #endif
@@ -20,7 +20,7 @@
 #include <GL/glut.h>
 #elif defined(LINUX) || defined(FREEBSD) || defined(HAIKU)
 #include <GL/glut.h>
-#elif defined(Q_OS_ANDROID) || defined(__ANDROID__)
+#elif defined(Q_OS_ANDROID) || defined(__ANDROID__) || defined(__ANDROID__)
 #include <GL/glut.h>
 #else
 #include <GLUT/glut.h>
@@ -42,14 +42,14 @@
 // Android OpenGL compatibility bootstrap
 //-----------------------------------------------------------------------------
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
 static void *APIENTRY_GL4ES toonzGL4ESGetProcAddress(const char *name) {
   return reinterpret_cast<void *>(eglGetProcAddress(name));
 }
 #endif
 
 void tglInitializeAndroidGLCompat() {
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
   // Qt owns EGL and has already made this widget's GLES context current when
   // initializeGL() calls this function. GL4ES uses that current context.
   static std::once_flag initialized;
