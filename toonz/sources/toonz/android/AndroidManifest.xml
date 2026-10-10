@@ -14,6 +14,8 @@
     <!-- Needed by the tablet pencil-test / stop-motion camera pipeline. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- A drawing tablet must have a real touchscreen; stylus support is handled through Qt input events. -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="true" />
 
     <!-- This edition targets landscape-oriented tablets; small-screen devices are excluded. -->
     <supports-screens
