@@ -1,0 +1,74 @@
+name: Android Native OpenToonz Configure
+
+on:
+  push:
+    branches: [master, main, 'mobile/**']
+    paths:
+      - 'toonz/sources/CMakeLists.txt'
+      - 'toonz/sources/toonz/CMakeLists.txt'
+      - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
+      - 'ci/android/fetch-opencv-android-sdk.sh'
+      - '.github/workflows/android-native-configure.yml'
+  pull_request:
+    paths:
+      - 'toonz/sources/CMakeLists.txt'
+      - 'toonz/sources/toonz/CMakeLists.txt'
+      - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
+      - 'ci/android/fetch-opencv-android-sdk.sh'
+      - '.github/workflows/android-native-configure.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  configure-original-native-target:
+    name: Configure original OpenToonz target for Android ARM64
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Android SDK, NDK and CMake
+        uses: android-actions/setup-android@v4
+        with:
+          log-accepted-android-sdk-licenses: false
+          packages: 'platform-tools ndk;27.2.12479018 cmake;3.31.6 platforms;android-35'
+
+      - name: Install Qt 5.15.2 for Android
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          host: linux
+          target: android
+          arch: android
+          modules: 'qtscript qtmultimedia qtsvg qttools qtandroidextras'
+          cache: true
+
+      - name: Fetch checksum-verified OpenCV Android SDK
+        shell: bash
+        run: ci/android/fetch-opencv-android-sdk.sh "$GITHUB_WORKSPACE/thirdparty/opencv-android-sdk"
+
+      - name: Configure the original C++/Qt application (experimental)
+        shell: bash
+        run: |
+          set -euo pipefail
+          export ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk/27.2.12479018"
+          test -f "$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake"
+          test -f "$QT_ROOT_DIR/lib/cmake/Qt5/Qt5Config.cmake"
+          cmake -S toonz/sources -B build/android-opentoonz-arm64 \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-24 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DQt5_DIR="$QT_ROOT_DIR/lib/cmake/Qt5" \
+            -DOPEN_TOONZ_ANDROID_OPENCV_ROOT="$GITHUB_WORKSPACE/thirdparty/opencv-android-sdk" \
+            -DOPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD=ON
+
+      - name: Save CMake configure log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-native-configure-log
+          path: build/android-opentoonz-arm64/CMakeFiles/CMakeOutput.log
+          if-no-files-found: ignore
