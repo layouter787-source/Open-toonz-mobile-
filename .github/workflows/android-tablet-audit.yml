@@ -12,6 +12,7 @@ on:
       - 'toonz/sources/toonz/main.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/toonz/android/AndroidManifest.xml'
+      - 'toonz/sources/toonz/penciltestpopup_qt.cpp'
       - 'ci/android/**'
       - 'toonz/sources/stopmotion/stopmotionserial.cpp'
       - 'toonz/sources/stopmotion/stopmotion.cpp'
@@ -26,6 +27,7 @@ on:
       - 'toonz/sources/toonz/main.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/toonz/android/AndroidManifest.xml'
+      - 'toonz/sources/toonz/penciltestpopup_qt.cpp'
       - 'ci/android/**'
       - 'toonz/sources/stopmotion/stopmotionserial.cpp'
       - 'toonz/sources/stopmotion/stopmotion.cpp'
@@ -74,6 +76,10 @@ jobs:
           grep -q '#ifdef Q_OS_ANDROID' toonz/sources/stopmotion/stopmotionserial.cpp
           grep -q 'QStringList StopMotionSerial::getAvailableSerialPorts' toonz/sources/stopmotion/stopmotionserial.cpp
           grep -q 'OPEN_TOONZ_ANDROID_OPENCV_ROOT' toonz/sources/CMakeLists.txt
+          grep -q 'list(APPEND OPEN_TOONZ_QT_MODULES AndroidExtras)' toonz/sources/CMakeLists.txt
+          grep -q 'Qt5::AndroidExtras' toonz/sources/toonz/CMakeLists.txt
+          grep -q 'QtAndroid::requestPermissionsSync' toonz/sources/toonz/penciltestpopup_qt.cpp
+          grep -q 'android.permission.CAMERA' toonz/sources/toonz/penciltestpopup_qt.cpp
           grep -q 'OPENCV_ANDROID_SDK_ROOT' toonz/sources/CMakeLists.txt
           grep -q 'cameracapturelevelcontrol_qt.cpp' toonz/sources/toonz/CMakeLists.txt
           grep -q 'penciltestpopup_qt.cpp' toonz/sources/toonz/CMakeLists.txt

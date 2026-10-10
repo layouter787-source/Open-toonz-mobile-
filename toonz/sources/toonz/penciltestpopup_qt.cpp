@@ -76,6 +76,11 @@
 #include <QVideoSurfaceFormat>
 #include <QThreadPool>
 
+#ifdef Q_OS_ANDROID
+#include <QtAndroid>
+#include <QMessageBox>
+#endif
+
 #ifdef _WIN32
 #include <dshow.h>
 #endif
@@ -1949,6 +1954,25 @@ void PencilTestPopup::onCameraListComboActivated(int comboIndex) {
   int index = comboIndex - 1;
   // in case the camera is not changed (just click the combobox)
   if (cameras.at(index).deviceName() == m_deviceName) return;
+
+#ifdef Q_OS_ANDROID
+  // Android declares CAMERA in the manifest, but Android 6+ also requires
+  // runtime approval. Ask only when the user selects a camera, not at startup.
+  const QString cameraPermission = QStringLiteral("android.permission.CAMERA");
+  if (QtAndroid::checkPermission(cameraPermission) ==
+      QtAndroid::PermissionResult::Denied) {
+    const auto permissionResults =
+        QtAndroid::requestPermissionsSync(QStringList() << cameraPermission);
+    if (!permissionResults.contains(cameraPermission) ||
+        permissionResults.value(cameraPermission) !=
+            QtAndroid::PermissionResult::Granted) {
+      QMessageBox::warning(
+          this, tr("Camera permission"),
+          tr("Allow camera access in Android settings to capture pencil-test frames."));
+      return;
+    }
+  }
+#endif
 
   QCamera* oldCamera = m_currentCamera;
   if (oldCamera) m_videoWidget->videoSurface()->stop();

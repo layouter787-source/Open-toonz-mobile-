@@ -339,7 +339,9 @@ set(OPEN_TOONZ_QT_MODULES
     Multimedia
     UiTools
   )
-if(NOT BUILD_TARGET_ANDROID)
+if(BUILD_TARGET_ANDROID)
+    list(APPEND OPEN_TOONZ_QT_MODULES AndroidExtras)
+else()
     list(APPEND OPEN_TOONZ_QT_MODULES
         MultimediaWidgets
         PrintSupport
