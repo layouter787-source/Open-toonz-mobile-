@@ -126,6 +126,9 @@ option(WITH_SYSTEM_SUPERLU "Use the system SuperLU library instead of 'thirdpart
 option(WITH_CANON "Build with Canon DSLR support - Requires Canon SDK" OFF)
 option(WITH_TRANSLATION "Generate translation projects as well" ON)
 option(WITH_WINTAB "(Windows only) Build with customized Qt with WinTab support. https://github.com/shun-iwasawa/qt5/releases/tag/v5.15.2_wintab" OFF)
+option(OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD
+    "Opt in to configuring the original C++/Qt OpenToonz target for Android; dependency support is incomplete"
+    OFF)
 
 # avoid using again
 option_defaults_clear()
@@ -310,16 +313,18 @@ include_directories(
     include
   )
 
-# The full OpenToonz app still requests desktop-only Qt modules and third-party
-# libraries below. Stop Android configuration here until a dedicated mobile
-# dependency set and app target have been implemented; otherwise CMake may
-# proceed as if this were a desktop build and report misleading errors.
+# Keep the safe default fail-fast behavior, but provide an explicit opt-in
+# for developers/CI to exercise the original native target while the remaining
+# Android dependency matrix is being ported. This is not a claim that it builds.
 if(BUILD_ENV_ANDROID)
-    message(FATAL_ERROR
-        "Android NDK detected, but the full OpenToonz Android tablet target is not ready. "
-        "The Android graphics/native-dependency link path is incomplete (including OpenCV, "
-        "OpenGL/GLEW assumptions, and other native libraries). "
-        "See doc/android_tablet_dependency_matrix.md. This guard prevents a false desktop/Unix build.")
+    if(NOT OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD)
+        message(FATAL_ERROR
+            "Android NDK detected, but the full OpenToonz Android tablet target is not ready. "
+            "The Android graphics/native-dependency link path is incomplete. "
+            "See doc/android_tablet_dependency_matrix.md. To test the unfinished native path explicitly, "
+            "set OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD=ON.")
+    endif()
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AndroidLegacyGL.cmake")
 endif()
 
 # Find the QtWidgets library
