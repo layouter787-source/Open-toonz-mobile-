@@ -28,6 +28,8 @@ Use a supported Qt-for-Android toolchain, Android SDK/NDK, CMake, and a tablet A
 
 Replace desktop-only windowing, file access, dialogs, input and platform integrations with Android-compatible equivalents. Keep the existing scene and animation systems wherever possible. Use Android document access for opening and saving projects. Make graphics/rendering code work with the Android-supported graphics stack.
 
+The original repository `stuff/` tree is now prepared for Android packaging as read-only assets, with first-run seeding into app-private storage in `TEnv`. This preserves the legacy engine's filesystem expectations. It still requires validation after the native CMake guard is resolved and a real APK can be built.
+
 ### 4. Tablet interaction design
 
 Adapt the original editor to landscape tablets, with touch-sized tools, stylus input, a large canvas, timeline/Xsheet, levels and properties panels. This is a redesign of the original application's UI and interaction—not a separate replacement editor. Preserve keyboard and shortcut workflows where tablet keyboards are available.
