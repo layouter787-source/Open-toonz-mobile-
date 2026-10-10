@@ -2,7 +2,7 @@
 <!-- Based on the Qt 5.15 Android package template; preserve the %%INSERT_*%% placeholders
      because androiddeployqt replaces them while packaging the application. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.qtproject.example"
+    package="io.github.layframe.studio"
     android:versionName="-- %%INSERT_VERSION_NAME%% --"
     android:versionCode="-- %%INSERT_VERSION_CODE%% --"
     android:installLocation="auto">
