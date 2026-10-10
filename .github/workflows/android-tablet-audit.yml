@@ -73,6 +73,7 @@ jobs:
           grep -q 'ANDROID_PACKAGE_SOURCE_DIR' toonz/sources/toonz/CMakeLists.txt
           grep -q 'elseif(BUILD_TARGET_ANDROID)' toonz/sources/toonz/CMakeLists.txt
           grep -q 'LayFrame Studio' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'package="io.github.layframe.studio"' toonz/sources/toonz/android/AndroidManifest.xml
           echo 'Qt Android packaging template is tablet/landscape configured and retains androiddeployqt placeholders.'
           grep -q 'does not support the Qt Serial Port module' doc/android_tablet_dependency_matrix.md
           grep -q 'Multimedia Widgets is not supported on Android' doc/android_tablet_dependency_matrix.md
