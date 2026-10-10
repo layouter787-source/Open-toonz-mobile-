@@ -35,6 +35,10 @@ The deeper renderer audit found that the graphics blockers are not confined to a
 
 The isolated Android graphics dependency probe subsequently passed for `arm64-v8a`, including GL4ES, Android GLU tessellation, and the original GLUT stroke/bitmap font API adapter. The original viewer initialization paths now have a Qt-owned EGL/GL4ES bootstrap, and the shader context requests GLES 3 while avoiding GLEW on Android. These are source and cross-link milestones only: the complete `OpenToonz` target is still blocked by its dependency/link path, and there is no APK or on-device renderer validation yet.
 
+## Tablet-only targeting
+
+The Android manifest now explicitly requires touchscreen hardware, fixes the activity to landscape, and excludes Android small/normal screen-size classes while allowing large/xlarge screens. The source-audit workflow asserts these properties so a future manifest edit cannot silently remove the tablet baseline. This is a manifest-level filter, not a perfect guarantee that every large-screen phone or foldable is excluded on every Android version. Before public Play Store release, the Play Console device catalog must also be reviewed and unsupported phone-sized device classes excluded. A stylus is not declared as a mandatory Android hardware feature because stylus capability reporting varies by vendor; pen input must be validated through Qt tablet/pointer events on real tablets.
+
 ## Consequence
 
 The current full OpenToonz target should not be sent directly to an Android NDK build and described as a tablet app. It is likely to fail configuration or compilation before reaching the application because the CMake platform selection and required Qt/dependency set are desktop-oriented.
