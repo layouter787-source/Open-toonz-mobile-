@@ -489,7 +489,7 @@ qt5_wrap_cpp(SOURCES ${MOC_HEADERS})
 # and all required ABI-compatible libraries are ready.
 if(BUILD_TARGET_ANDROID)
     set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android" CACHE PATH
-        "Android package template directory for LayFrame Studio")
+        "Android package template directory for ToonzTab")
 endif()
 
 if(BUILD_ENV_MSVC)
