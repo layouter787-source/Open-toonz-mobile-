@@ -21,6 +21,12 @@ Status: source audit; no Android APK build is claimed.
 | Main executable linking | `toonz/sources/toonz/CMakeLists.txt` contains explicit link branches for MSVC, Apple and Unix-like environments. The Android default build now excludes the LZO CLI helpers and the separate `tcleanupper`, `tcomposer`, `tconverter`, and farm-controller/server executables while leaving their targets available for future port work. | `BUILD_ENV_ANDROID` still lacks an Android-specific `target_link_libraries` branch, and editor features that depend on separate desktop helper processes are not available in the Android baseline. | Add a deliberate Android target/link branch and port or replace helper-process-dependent features only after the compatible native dependencies are defined. |
 | Qt Android packaging | A Qt 5.15-based `toonz/sources/toonz/android/AndroidManifest.xml` template now preserves the `androiddeployqt` placeholders, requests landscape orientation, uses the `com.toonz.tab` application ID and ToonzTab label, and excludes small-screen devices. The app CMake records `ANDROID_PACKAGE_SOURCE_DIR` and includes an Android executable creation branch. | The top-level Android fail-fast guard prevents CMake reaching this target, and a complete Android link branch for the native dependencies is still missing. No successful APK build exists yet. | Finish the Android dependency/link branches first, then validate manifest/package name, ABI, SDK/NDK/JDK and build APK with Qt Creator/`androiddeployqt`. |
 
+## New graphics cross-build work (2026-10-10)
+
+- `toonz/sources/cmake/AndroidLegacyGL.cmake` pins GL4ES and the Android GLU port to immutable commits and configures static ARM64-compatible targets. GLU is compiled in C++14 mode because this legacy Mesa code still uses the removed C++17 `register` specifier; the rest of OpenToonz remains C++17.
+- `ci/android/graphics-probe/` and `.github/workflows/android-native-graphics.yml` cross-compile and link a small NDK executable referencing fixed-function OpenGL and GLU tessellator symbols. This is a graphics dependency probe, **not** the original editor build and **not** an APK.
+- The compatibility layer is not yet wired into the original OpenToonz application target. Do not remove the top-level Android fail-fast guard until this probe passes and the full application dependency/link path is integrated and validated.
+
 ## Relevant source locations
 
 - [Image I/O CMake](../toonz/sources/image/CMakeLists.txt): excludes the legacy desktop MOV/3GP proxy sources from Android.
