@@ -1,7 +1,7 @@
 # Android tablet port — source audit
 
 Date: 2026-10-10  
-Repository branch: `master`  
+Repository branch: `mobile/android-foundation`  
 Scope: initial source-level audit; no Android build is claimed.
 
 ## Findings verified in this source tree
@@ -10,14 +10,14 @@ Scope: initial source-level audit; no Android build is claimed.
 2. The original configuration treated Android as a generic Unix-like target. The current patch adds explicit `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` detection and reuses POSIX-like source selections (`BUILD_TARGET_UNIX`) where the core needs them, while keeping the Android link/dependency environment separate. The complete Android application target remains unfinished.
 3. The CMake Qt module list now conditionally excludes `MultimediaWidgets` and `SerialPort` for Android while retaining them for desktop targets. The remaining Qt modules and their use by the full application still need validation with the selected Android Qt kit.
 4. On 64-bit non-Apple builds, the configuration requires OpenCV. Additional third-party native dependencies and platform assumptions must also be checked for Android compatibility.
-5. The main app entry point `toonz/sources/toonz/main.cpp` includes desktop UI and graphics components. The Windows 8 tablet-support header is guarded by `_WIN32`, its source is selected only for Windows, and the legacy `QGLPixelBuffer` include is guarded for Android. Existing `QTabletEvent` and touchscreen gesture code still needs validation on Android hardware.
+5. The main app entry point `toonz/sources/toonz/main.cpp` contains desktop UI and graphics assumptions. The Windows 8 tablet-support header is guarded by `_WIN32`, and the legacy `QGLPixelBuffer` include is excluded for Android. The Android startup path now configures a `QSurfaceFormat` for OpenGL ES and excludes the desktop GLUT/`QGLFormat` initialization block. This is only a startup-level separation: renderer code still uses legacy OpenGL paths and needs a real Android build. Existing `QTabletEvent` and touchscreen gesture code still needs validation on hardware.
 6. A Qt 5.15 Android manifest template and `ANDROID_PACKAGE_SOURCE_DIR` hook now exist, but there is still no tested Android toolchain configuration or successful APK build path.
 
 ## Implementation progress — 2026-10-10
 
 The top-level CMake configuration detects `ANDROID` before the generic `UNIX` branch and sets dedicated `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` flags. Until an Android-specific graphics and native-library link path exists, configuration stops with a fatal message before building the desktop application. The remaining blocker includes OpenCV, GLEW/desktop OpenGL assumptions, and other native libraries—not just the Qt modules that were already gated.
 
-The application CMake now adds the Windows Pointer Input adapter only to Windows targets. On Android, the startup path maximizes the window instead of restoring desktop coordinates and skips the desktop-only maximize/layout workaround. The legacy `QGLPixelBuffer` include is also guarded for Android while remaining available to desktop builds. The top-level Qt module list omits `SerialPort`, `MultimediaWidgets`, and Android's `PrintSupport` requirement. `stopmotionserial.cpp` has a no-device Android fallback while preserving desktop serial support. Android selects the Qt video-surface pencil-test UI; the stop-motion webcam still needs an ABI-matched OpenCV Android SDK, configurable using `OPEN_TOONZ_ANDROID_OPENCV_ROOT` or `OPENCV_ANDROID_SDK_ROOT`. See the [dependency matrix](android_tablet_dependency_matrix.md) for the remaining work. These are compatibility steps; they do **not** mean that OpenToonz builds or runs on Android yet.
+The application CMake adds the Windows Pointer Input adapter only to Windows targets. On Android, the startup path maximizes the window rather than restoring desktop coordinates, skips the desktop-only maximize/layout workaround, and selects the Fusion widget style. The Android startup also uses an OpenGL ES surface format and avoids desktop GLUT initialization. The legacy `QGLPixelBuffer` include remains available to desktop builds but is excluded for Android. The top-level Qt module list omits `SerialPort`, `MultimediaWidgets`, and Android's `PrintSupport` requirement. `stopmotionserial.cpp` has a no-device Android fallback while preserving desktop serial support. Android selects the Qt video-surface pencil-test UI; the stop-motion webcam still needs an ABI-matched OpenCV Android SDK, configurable using `OPEN_TOONZ_ANDROID_OPENCV_ROOT` or `OPENCV_ANDROID_SDK_ROOT`. See the [dependency matrix](android_tablet_dependency_matrix.md) for the remaining work. The Android native manifest and Qt process/window title use the ToonzTab identity (`com.toonz.tab`). These are compatibility steps; they do **not** mean that OpenToonz builds or runs on Android yet.
 
 The GitHub Actions source audit checks Android platform detection, the fail-fast guard, the Windows-only pen adapter, Android Qt-module exclusions, the serial fallback, and the dependency matrix.
 
