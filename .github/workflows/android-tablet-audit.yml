@@ -7,6 +7,10 @@ on:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/**'
       - 'toonz/sources/common/tapptools/tenv.cpp'
+      - 'toonz/sources/common/tvrender/tofflinegl.cpp'
+      - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
+      - 'toonz/sources/include/qtofflinegl.h'
+      - 'toonz/sources/stdfx/shadingcontext.cpp'
       - 'toonz/sources/image/CMakeLists.txt'
       - 'toonz/sources/image/tiio.cpp'
       - 'toonz/sources/stopmotion/**'
@@ -20,6 +24,10 @@ on:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/**'
       - 'toonz/sources/common/tapptools/tenv.cpp'
+      - 'toonz/sources/common/tvrender/tofflinegl.cpp'
+      - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
+      - 'toonz/sources/include/qtofflinegl.h'
+      - 'toonz/sources/stdfx/shadingcontext.cpp'
       - 'toonz/sources/image/CMakeLists.txt'
       - 'toonz/sources/image/tiio.cpp'
       - 'toonz/sources/stopmotion/**'
@@ -57,6 +65,10 @@ jobs:
               "toonz/sources/common/tapptools/tenv.cpp",
               "toonz/sources/toonzlib/toonzfolders.cpp",
               "toonz/sources/toonz/mainwindow.cpp",
+              "toonz/sources/common/tvrender/tofflinegl.cpp",
+              "toonz/sources/common/tvrender/qtofflinegl.cpp",
+              "toonz/sources/include/qtofflinegl.h",
+              "toonz/sources/stdfx/shadingcontext.cpp",
               "toonz/sources/toonz/android/AndroidManifest.xml",
               "doc/android_tablet_port_audit.md",
               "doc/android_tablet_dependency_matrix.md",
@@ -72,6 +84,10 @@ jobs:
           tenv = Path("toonz/sources/common/tapptools/tenv.cpp").read_text()
           folders = Path("toonz/sources/toonzlib/toonzfolders.cpp").read_text()
           window = Path("toonz/sources/toonz/mainwindow.cpp").read_text()
+          offline_h = Path("toonz/sources/include/qtofflinegl.h").read_text()
+          offline_cpp = Path("toonz/sources/common/tvrender/qtofflinegl.cpp").read_text()
+          offlineselect = Path("toonz/sources/common/tvrender/tofflinegl.cpp").read_text()
+          shading = Path("toonz/sources/stdfx/shadingcontext.cpp").read_text()
           matrix = Path("doc/android_tablet_dependency_matrix.md").read_text()
           audit = Path("doc/android_tablet_port_audit.md").read_text()
           roadmap = Path("doc/tablet_port_roadmap.md").read_text()
@@ -118,6 +134,13 @@ jobs:
           assert glut > desktop
           assert 'QCoreApplication::setApplicationName("ToonzTab")' in main
           assert 'applicationFullName = QStringLiteral("ToonzTab")' in window
+          assert '#ifndef Q_OS_ANDROID\\n// Legacy desktop-only offscreen buffers are unavailable on the Android GLES path.\\n#include <QGLPixelBuffer>\\n#endif' in window
+          assert '#ifdef Q_OS_ANDROID\\n    // Keep this desktop-only feature unavailable until it has a GLES renderer.\\n    RasterizePliToggleAction = 0;\\n#else' in window
+          assert 'std::make_shared<QtOfflineGL>(dim, shared)' in offlineselect
+          assert 'QGLPixelBuffer' in offline_h and 'glBegin(GL_QUAD_STRIP)' in offlineselect
+          assert '#include <GL/glew.h>' in shading
+          assert 'glBegin(GL_QUADS)' in shading
+          assert 'QGLPixelBuffer' in offline_cpp
           assert "QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)" in tenv
           assert "QStandardPaths::AppConfigLocation" in tenv
           assert "systemVarDirectory" in tenv
