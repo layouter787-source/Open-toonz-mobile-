@@ -29,6 +29,8 @@ The native Android package path now stages the repository's original `stuff/` tr
 
 This source change is not yet runtime-verified: the deliberate CMake fail-fast guard still runs before the Android package staging block, so the block has not been exercised by a real Android configure/package/build. The source audit checks only that the intended code path is present.
 
+On Android, `TEnv` now uses `QStandardPaths::AppConfigLocation` for the `SystemVar.ini` file and `QStandardPaths::AppDataLocation` for the writable `stuff/` copy. Initialization explicitly creates both parent directories before persisting `TOONZROOT`, avoiding a dependency on the old desktop `~/.config/OpenToonz` layout.
+
 ## Consequence
 
 The current full OpenToonz target should not be sent directly to an Android NDK build and described as a tablet app. It is likely to fail configuration or compilation before reaching the application because the CMake platform selection and required Qt/dependency set are desktop-oriented.
