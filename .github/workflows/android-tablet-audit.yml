@@ -123,7 +123,8 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           source = Path("toonz/sources/CMakeLists.txt").read_text()
-          guard = source.find("\\nif(BUILD_ENV_ANDROID)\\n")
+          anchor = source.find("# The full OpenToonz app still requests desktop-only Qt modules")
+          guard = source.find("if(BUILD_ENV_ANDROID)", anchor)
           guard_end = source.find("endif()", guard)
           qt = source.find("find_package(Qt5 REQUIRED")
           opencv = source.find("find_package(OpenCV")
