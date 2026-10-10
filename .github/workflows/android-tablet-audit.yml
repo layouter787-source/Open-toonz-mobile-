@@ -6,6 +6,7 @@ on:
     paths:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/**'
+      - 'toonz/sources/toonz/toolbar.cpp'
       - 'toonz/sources/common/tapptools/tenv.cpp'
       - 'toonz/sources/common/tvrender/tofflinegl.cpp'
       - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
@@ -23,6 +24,7 @@ on:
     paths:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/**'
+      - 'toonz/sources/toonz/toolbar.cpp'
       - 'toonz/sources/common/tapptools/tenv.cpp'
       - 'toonz/sources/common/tvrender/tofflinegl.cpp'
       - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
@@ -143,6 +145,10 @@ jobs:
           assert "#ifdef Q_OS_ANDROID" in window
           assert 'std::make_shared<QtOfflineGL>(dim, shared)' in offlineselect
           assert 'QGLPixelBuffer' in offline_h and 'glBegin(GL_QUAD_STRIP)' in offlineselect
+          assert '#ifndef Q_OS_ANDROID' in offline_h
+          assert 'format.setRenderableType(QSurfaceFormat::OpenGLES)' in offline_cpp
+          assert 'format.setVersion(2, 0)' in offline_cpp
+          assert 'defined(Q_OS_ANDROID)' in offlineselect
           assert '#include <GL/glew.h>' in shading
           assert 'glBegin(GL_QUADS)' in shading
           assert 'QGLPixelBuffer' in offline_cpp
