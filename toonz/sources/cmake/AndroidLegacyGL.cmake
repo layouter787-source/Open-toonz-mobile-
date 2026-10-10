@@ -119,9 +119,44 @@ include_directories(BEFORE SYSTEM
 )
 
 # Use the same variables expected by existing native OpenToonz targets.
+# OpenToonz uses GLUT only for stroke-font rendering; Qt still owns the
+# Android window and EGL context. Build just FreeGLUT's portable font geometry,
+# plus a small adapter that avoids glutInit()/window creation.
+FetchContent_Declare(
+    opentoonz_freeglut
+    GIT_REPOSITORY https://github.com/freeglut/freeglut.git
+    GIT_TAG 69ac8824f003dd813ceb14b11fb4efaa38cb4aa9
+)
+FetchContent_GetProperties(opentoonz_freeglut)
+if(NOT opentoonz_freeglut_POPULATED)
+    FetchContent_Populate(opentoonz_freeglut)
+endif()
+
+add_library(ToonzAndroidGLUTFonts STATIC
+    "${opentoonz_freeglut_SOURCE_DIR}/src/fg_stroke_roman.c"
+    "${opentoonz_freeglut_SOURCE_DIR}/src/fg_stroke_mono_roman.c"
+    "${CMAKE_CURRENT_LIST_DIR}/../common/tgl/android_glut_fonts.c"
+)
+target_include_directories(ToonzAndroidGLUTFonts
+    PUBLIC "${opentoonz_freeglut_SOURCE_DIR}/include"
+    PRIVATE "${opentoonz_freeglut_SOURCE_DIR}/src"
+)
+target_compile_definitions(ToonzAndroidGLUTFonts PRIVATE
+    FREEGLUT_STATIC
+    FREEGLUT_GLES
+    TARGET_HOST_ANDROID
+)
+target_link_libraries(ToonzAndroidGLUTFonts PUBLIC GL)
+set_target_properties(ToonzAndroidGLUTFonts PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/opentoonz"
+)
+
+include_directories(BEFORE SYSTEM "${opentoonz_freeglut_SOURCE_DIR}/include")
+
 set(GL_LIB GL)
 set(GLU_LIB ToonzAndroidGLU)
-set(GLUT_LIB "")
+set(GLUT_LIB ToonzAndroidGLUTFonts)
 set(GLEW_LIB "")
 set(OPEN_TOONZ_ANDROID_LEGACY_GL_READY TRUE)
 
