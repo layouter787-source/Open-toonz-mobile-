@@ -6,6 +6,9 @@
  * freeglut's window/event initialization: Qt owns the Android window and EGL
  * context, while OpenToonz only needs GLUT stroke text helpers.
  */
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <GL/freeglut.h>
 #include "fg_internal.h"
 
