@@ -79,6 +79,28 @@ jobs:
           grep -q 'LayFrame Studio' toonz/sources/toonz/android/AndroidManifest.xml
           grep -q 'package="io.github.layframe.studio"' toonz/sources/toonz/android/AndroidManifest.xml
           echo 'Qt Android packaging template is tablet/landscape configured and retains androiddeployqt placeholders.'
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          path = "toonz/sources/toonz/android/AndroidManifest.xml"
+          root = ET.parse(path).getroot()
+          android = "{http://schemas.android.com/apk/res/android}"
+          assert root.attrib["package"] == "io.github.layframe.studio"
+          application = root.find("application")
+          assert application is not None
+          activity = application.find("activity")
+          assert activity is not None
+          assert activity.attrib[android + "screenOrientation"] == "landscape"
+          assert activity.attrib[android + "exported"] == "true"
+          print("AndroidManifest.xml is well-formed and the tablet package settings are present.")
+          PY
+          echo '--- Expected CMake fail-fast probe (not an Android build) ---'
+          cmake_log="$RUNNER_TEMP/layframe-android-cmake-probe.log"
+          if cmake -S toonz/sources -B "$RUNNER_TEMP/layframe-android-cmake-probe" -DANDROID=ON > "$cmake_log" 2>&1; then
+            echo 'ERROR: source CMake unexpectedly passed the Android guard.'
+            exit 1
+          fi
+          grep -q 'Android NDK detected, but the full OpenToonz Android tablet target is not ready' "$cmake_log"
+          echo 'CMake parses the platform branch and stops at the documented Android guard, as intended.'
           grep -q 'does not support the Qt Serial Port module' doc/android_tablet_dependency_matrix.md
           grep -q 'Multimedia Widgets is not supported on Android' doc/android_tablet_dependency_matrix.md
           grep -q 'Android-specific library and link branches' doc/android_tablet_dependency_matrix.md
