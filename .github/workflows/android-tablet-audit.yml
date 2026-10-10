@@ -32,7 +32,13 @@ jobs:
           test -f toonz/sources/CMakeLists.txt
           test -f toonz/sources/toonz/main.cpp
           echo '--- CMake platform branches ---'
-          grep -nE 'BUILD_TARGET_WIN|BUILD_TARGET_APPLE|BUILD_TARGET_UNIX|CMAKE_SYSTEM_NAME' toonz/sources/CMakeLists.txt | head -n 35 || true
+          grep -nE 'BUILD_TARGET_ANDROID|BUILD_TARGET_WIN|BUILD_TARGET_APPLE|BUILD_TARGET_UNIX|CMAKE_SYSTEM_NAME' toonz/sources/CMakeLists.txt | head -n 35 || true
+          echo '--- Dedicated Android target detection and fail-fast guard ---'
+          grep -nE 'BUILD_ENV_ANDROID|Android NDK detected|Target system is ANDROID' toonz/sources/CMakeLists.txt
+          grep -q 'if(ANDROID)' toonz/sources/CMakeLists.txt
+          grep -q 'set(BUILD_TARGET_ANDROID ON)' toonz/sources/CMakeLists.txt
+          grep -q 'set(BUILD_ENV_ANDROID ON)' toonz/sources/CMakeLists.txt
+          grep -q 'Android NDK detected' toonz/sources/CMakeLists.txt
           echo '--- Qt modules currently required ---'
           grep -nA18 'find_package(Qt5 REQUIRED' toonz/sources/CMakeLists.txt || true
           echo '--- Desktop/tablet-specific include in main.cpp ---'
