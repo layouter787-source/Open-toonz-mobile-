@@ -26,7 +26,10 @@ set(BUILD_TARGET_APPLE    OFF)
 set(BUILD_TARGET_UNIX     OFF)
 if(ANDROID)
     set(BUILD_TARGET_ANDROID ON)
-    message(STATUS "Target system is ANDROID")
+    # Android is POSIX-like for shared source selection, but it must keep its
+    # own BUILD_ENV_ANDROID dependency/link path instead of using desktop Unix.
+    set(BUILD_TARGET_UNIX ON)
+    message(STATUS "Target system is ANDROID (using POSIX source variants)")
 elseif(WIN32)
     set(BUILD_TARGET_WIN ON)
     message(STATUS "Target system is WIN")
