@@ -8,10 +8,10 @@ Scope: initial source-level audit; no Android build is claimed.
 
 1. The main application is configured from `toonz/sources/CMakeLists.txt`.
 2. The original configuration treated Android as a generic Unix-like target. The current patch adds explicit `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` detection; the complete Android application target and dependency configuration remain unfinished.
-3. The existing CMake configuration requires a broad desktop Qt 5 module set: Core, Gui, Network, OpenGL, Svg, Xml, Script, Widgets, PrintSupport, LinguistTools, Multimedia, MultimediaWidgets, SerialPort, and UiTools.
+3. The CMake Qt module list now conditionally excludes `MultimediaWidgets` and `SerialPort` for Android while retaining them for desktop targets. The remaining Qt modules and their use by the full application still need validation with the selected Android Qt kit.
 4. On 64-bit non-Apple builds, the configuration requires OpenCV. Additional third-party native dependencies and platform assumptions must also be checked for Android compatibility.
-5. The main app entry point `toonz/sources/toonz/main.cpp` includes desktop UI and graphics components. The Windows 8 tablet-support header is guarded by `_WIN32`, and `toonz/sources/toonz/CMakeLists.txt` now adds its header/source only for `BUILD_TARGET_WIN`. Android still needs its own Qt tablet/stylus input handling and several desktop graphics assumptions remain.
-6. The repository's existing documented build paths target Windows, macOS, Linux, and BSD; they do not provide an Android/Qt Creator APK build path.
+5. The main app entry point `toonz/sources/toonz/main.cpp` includes desktop UI and graphics components. The Windows 8 tablet-support header is guarded by `_WIN32`, its source is selected only for Windows, and the legacy `QGLPixelBuffer` include is guarded for Android. Existing `QTabletEvent` and touchscreen gesture code still needs validation on Android hardware.
+6. A Qt 5.15 Android manifest template and `ANDROID_PACKAGE_SOURCE_DIR` hook now exist, but there is still no tested Android toolchain configuration or successful APK build path.
 
 ## Implementation progress — 2026-10-10
 
