@@ -84,7 +84,9 @@ public:
 #ifdef MACOSX
     return QString::fromStdString(getApplicationFileName()) + QString(".app") +
            QString("/Contents/Resources/SystemVar.ini");
-#elif defined(HAIKU)
+#elif defined(Q_OS_ANDROID) || defined(HAIKU)
+    // Keep settings inside the app sandbox; do not reuse desktop OpenToonz
+    // configuration paths on the ToonzTab Android package.
     return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) +
            "/SystemVar.ini";
 #else /* Generic Unix */
