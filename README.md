@@ -1,70 +1,31 @@
-# OpenToonz
+# LayFrame Studio — Tablet Edition
 
-## ⚠️ **Important**
+**LayFrame Studio** is the working name for this community adaptation of the OpenToonz 2D animation engine, focused exclusively on Android tablets in landscape orientation.
 
-**OFFICIAL SOURCE ONLY:** The only official websites for OpenToonz are [**opentoonz.github.io**](https://opentoonz.github.io/) and this [GitHub repository](https://github.com/opentoonz/opentoonz). To ensure your security, please avoid downloading OpenToonz from any other domain, as there are no other official mirrors or partner sites.
+> **Development status:** This repository currently contains the OpenToonz C++ source tree. The Android tablet port is not yet complete, and no installable Android APK is claimed by this README. Desktop components and dependencies still need to be audited and adapted before a tablet build can be considered functional.
 
-[日本語](./doc/README_ja.md) [简体中文](./doc/README_chs.md)
+## Project direction
 
-[![](https://ci.appveyor.com/api/projects/status/oa5l5pc964h8fv49/branch/master?svg=true)](https://ci.appveyor.com/project/opentoonz/opentoonz)
-[![Build Windows](https://github.com/opentoonz/opentoonz/actions/workflows/workflow_windows.yml/badge.svg?branch=master)](https://github.com/opentoonz/opentoonz/actions/workflows/workflow_windows.yml)
-[![Build macOS](https://github.com/opentoonz/opentoonz/actions/workflows/workflow_macos.yml/badge.svg?branch=master)](https://github.com/opentoonz/opentoonz/actions/workflows/workflow_macos.yml)
-[![Build Linux](https://github.com/opentoonz/opentoonz/actions/workflows/workflow_linux.yml/badge.svg?branch=master)](https://github.com/opentoonz/opentoonz/actions/workflows/workflow_linux.yml)
-[![Translation status](https://hosted.weblate.org/widgets/opentoonz/-/svg-badge.svg)](https://hosted.weblate.org/engage/opentoonz/)
+- **Target:** Android tablets only; phones are intentionally out of scope.
+- **UI:** landscape-first workspace, touch-friendly controls, drawing canvas, timeline/Xsheet, levels and panels sized for tablet displays.
+- **Technology:** preserve the OpenToonz C++ animation core where possible and use Qt for the application UI and Android integration.
+- **Build:** use a reproducible Android/Qt toolchain and CI to validate changes and publish an APK only after the Android target actually builds.
+- **Identity:** use the working name LayFrame Studio for the adapted application. Keep upstream attribution and all applicable license notices.
 
-## What is OpenToonz?
+## Roadmap
 
-OpenToonz is a 2D animation software published by 
-[DWANGO](http://dwango.co.jp/english/). It is based on **Toonz Studio
-Ghibli Version**, originally developed in Italy by
-[Digital Video, Inc.](http://www.toonz.com/), and customized by
-[Studio Ghibli](http://www.ghibli.jp/) over many years of production.
+See [Tablet Port Roadmap](./doc/tablet_port_roadmap.md) for the staged migration plan and the current technical constraints.
 
-## Program Requirements
+## Upstream project
 
-Please refer to the OpenToonz site at <https://opentoonz.github.io/e/index.html>.
+This project is based on [OpenToonz](https://github.com/opentoonz/opentoonz), an open-source 2D animation program published by DWANGO and based on Toonz technology. The upstream project was originally developed by Digital Video, Inc. and customized by Studio Ghibli.
 
-## Installation
-
-Please download and install OpenToonz from the latest installer at <https://opentoonz.github.io/e/index.html>.
-
-Older versions and unstable nightly builds are also available at <https://github.com/opentoonz/opentoonz/releases>.
-
-## Development
-
-- [Development checklist (draft)](./doc/development_checklist.md)
-- [AI-assisted development checklist (draft)](./doc/ai_assisted_development_checklist.md)
-
-## How to Build Locally
-
-- [Windows](./doc/how_to_build_win.md)
-- [macOS](./doc/how_to_build_macosx.md)
-- [Linux](./doc/how_to_build_linux.md)
-- [BSD](./doc/how_to_build_bsd.md)
-
-For instructions on how to build stylesheets, please [see here](./doc/how_to_stylesheet.md).
-
-Can't develop but still want to help? Help us test individual Pull Requests before they are merged with [these steps](./doc/how_to_test_prs.md).
-
-## Community
-
-- To share tips or to troubleshoot, join the [Google OpenToonz Users forum](https://groups.google.com/forum/#!forum/opentoonz_en)
-- If you found a bug with the software after troubleshooting, or are a developer, search the [Github issues](https://github.com/opentoonz/opentoonz/issues) and post there.
-
-## Documentation
-
-- For general documentation, please [look here](https://github.com/opentoonz/opentoonz_docs).
+The upstream source tree is retained as the foundation; this fork is an independent adaptation and is not an official OpenToonz release.
 
 ## Licensing
 
-- Files outside of the `thirdparty` and `stuff/library/mypaint brushes` directories are based on the Modified BSD License.
-  - [modified BSD license](./LICENSE.txt).
-  - Based on this license, this software may be used or changed freely for business or personal use.
-- For files in the `thirdparty` directory:
-  - Please consult with the licenses in the appropriate READMEs or source codes.
-- For files in the `stuff/library/mypaint brushes` directory:
-  - Please see the licenses in `stuff/library/mypaint brushes/Licenses.txt`.
+OpenToonz source files are subject to their existing license notices. Files outside the `thirdparty` and `stuff/library/mypaint brushes` directories are generally covered by the Modified BSD license; third-party components and brush libraries have their own terms. Read [LICENSE.txt](./LICENSE.txt) and the relevant notices before redistributing builds. Keep all required attribution and license files in any derivative distribution.
 
-### Special Thanks
+## Current limitation
 
-This open-source program is developed from Toonz, a software originally created by Digital Video, S.p.A., Rome, Italy
+A rename or a tablet-oriented README does not make the desktop application Android-compatible. The port must progressively remove or replace desktop-only assumptions, validate Qt Android support for required dependencies, adapt input and layout for touch/stylus, and build/test on a real tablet before it can be called usable.
