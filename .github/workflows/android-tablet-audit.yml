@@ -7,6 +7,7 @@ on:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/main.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
+      - 'toonz/sources/stopmotion/stopmotionserial.cpp'
       - 'doc/android_tablet_port_audit.md'
       - 'doc/android_tablet_dependency_matrix.md'
       - '.github/workflows/android-tablet-audit.yml'
@@ -15,6 +16,7 @@ on:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/main.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
+      - 'toonz/sources/stopmotion/stopmotionserial.cpp'
       - 'doc/android_tablet_port_audit.md'
       - 'doc/android_tablet_dependency_matrix.md'
       - '.github/workflows/android-tablet-audit.yml'
@@ -43,6 +45,10 @@ jobs:
           grep -q 'set(BUILD_TARGET_ANDROID ON)' toonz/sources/CMakeLists.txt
           grep -q 'set(BUILD_ENV_ANDROID ON)' toonz/sources/CMakeLists.txt
           grep -q 'Android NDK detected' toonz/sources/CMakeLists.txt
+          grep -q 'set(OPEN_TOONZ_QT_MODULES' toonz/sources/CMakeLists.txt
+          awk 'index($0, "if(NOT BUILD_TARGET_ANDROID)") { inside=1 } index($0, "list(APPEND OPEN_TOONZ_QT_MODULES") && inside { in_list=1 } index($0, "MultimediaWidgets") && in_list { multimedia_widgets=1 } index($0, "SerialPort") && in_list { serial_port=1 } index($0, "endif()") && inside { inside=0 } END { exit !(multimedia_widgets && serial_port) }' toonz/sources/CMakeLists.txt
+          grep -q '#ifdef Q_OS_ANDROID' toonz/sources/stopmotion/stopmotionserial.cpp
+          grep -q 'QStringList StopMotionSerial::getAvailableSerialPorts' toonz/sources/stopmotion/stopmotionserial.cpp
           awk '/kis_tablet_support_win8.h/ { if (previous ~ /#ifdef _WIN32/) found=1 } { previous=$0 } END { exit !found }' toonz/sources/toonz/main.cpp
           echo 'Windows-only tablet support include is correctly guarded.'
           grep -q 'if(BUILD_TARGET_WIN)' toonz/sources/toonz/CMakeLists.txt
