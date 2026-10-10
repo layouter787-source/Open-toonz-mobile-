@@ -327,7 +327,6 @@ set(SOURCES
     iocommand.cpp
     levelcommand.cpp
     viewercommand.cpp
-    print.cpp
     subscenecommand.cpp
     svncleanupdialog.cpp
     svncommitdialog.cpp
@@ -406,6 +405,12 @@ set(SOURCES
     ObjectTracker.cpp
     predict3d.cpp
 )
+
+# QPrinter/QPrintDialog depend on the desktop Qt PrintSupport module. PDF
+# Xsheet export stays enabled through QPdfWriter in Qt Gui.
+if(NOT BUILD_TARGET_ANDROID)
+    list(APPEND SOURCES print.cpp)
+endif()
 
 # Windows Pointer Input is a Windows-only implementation. Keep it out of other
 # targets so future Android builds can use Qt's platform tablet events instead.
