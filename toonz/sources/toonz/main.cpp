@@ -766,16 +766,22 @@ int main(int argc, char *argv[]) {
   }
   a.processEvents();
 
+#ifdef Q_OS_ANDROID
+  // Android tablets use the full landscape activity; never restore desktop
+  // window coordinates that may be outside the tablet's available geometry.
+  w.setWindowState(w.windowState() | Qt::WindowMaximized);
+#else
   TFilePath fp = ToonzFolder::getModuleFile("mainwindow.ini");
   QSettings settings(toQString(fp), QSettings::IniFormat);
   if (settings.contains("MainWindowGeometry"))
     w.restoreGeometry(settings.value("MainWindowGeometry").toByteArray());
   else  // maximize window on the first launch
     w.setWindowState(w.windowState() | Qt::WindowMaximized);
+#endif
 
   ExpressionReferenceManager::instance()->init();
 
-#ifndef MACOSX
+#if !defined(MACOSX) && !defined(Q_OS_ANDROID)
   // Workaround for the maximized window case: Qt delivers two resize events,
   // one in the normal geometry, before
   // maximizing (why!?), the second afterwards - all inside the following show()
