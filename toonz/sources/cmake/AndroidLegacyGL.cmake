@@ -133,6 +133,7 @@ if(NOT opentoonz_freeglut_POPULATED)
 endif()
 
 add_library(ToonzAndroidGLUTFonts STATIC
+    "${opentoonz_freeglut_SOURCE_DIR}/src/fg_font_data.c"
     "${opentoonz_freeglut_SOURCE_DIR}/src/fg_stroke_roman.c"
     "${opentoonz_freeglut_SOURCE_DIR}/src/fg_stroke_mono_roman.c"
     "${CMAKE_CURRENT_LIST_DIR}/../common/tgl/android_glut_fonts.c"
