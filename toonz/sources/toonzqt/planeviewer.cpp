@@ -152,7 +152,10 @@ void PlaneViewer::drawBackground() {
 
 //=========================================================================================
 
-void PlaneViewer::initializeGL() { initializeOpenGLFunctions(); }
+void PlaneViewer::initializeGL() {
+  tglInitializeAndroidGLCompat();
+  initializeOpenGLFunctions();
+}
 
 void PlaneViewer::resizeGL(int width, int height) {
   width *= getDevPixRatio();
