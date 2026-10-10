@@ -31,6 +31,8 @@ This source change is not yet runtime-verified: the deliberate CMake fail-fast g
 
 On Android, `TEnv` now uses `QStandardPaths::AppConfigLocation` for the `SystemVar.ini` file and `QStandardPaths::AppDataLocation` for the writable `stuff/` copy. Initialization explicitly creates both parent directories before persisting `TOONZROOT`, avoiding a dependency on the old desktop `~/.config/OpenToonz` layout.
 
+The deeper renderer audit found that the graphics blockers are not confined to app startup. `qtofflinegl.h` still declares `QtOfflineGLPBuffer` with `QGLPixelBuffer`; `qtofflinegl.cpp` configures a desktop compatibility profile; `tofflinegl.cpp` has no Android default renderer branch; and `stdfx/shadingcontext.cpp` includes GLEW, fixed-function matrix calls and immediate-mode drawing. These must be ported together. Simply removing the CMake guard or hiding those APIs behind preprocessor checks would not preserve the original drawing and effects engine.
+
 ## Consequence
 
 The current full OpenToonz target should not be sent directly to an Android NDK build and described as a tablet app. It is likely to fail configuration or compilation before reaching the application because the CMake platform selection and required Qt/dependency set are desktop-oriented.
