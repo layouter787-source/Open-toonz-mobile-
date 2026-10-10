@@ -40,15 +40,19 @@
 // Android OpenGL compatibility bootstrap
 //-----------------------------------------------------------------------------
 
+#ifdef Q_OS_ANDROID
+static void *APIENTRY_GL4ES toonzGL4ESGetProcAddress(const char *name) {
+  return reinterpret_cast<void *>(eglGetProcAddress(name));
+}
+#endif
+
 void tglInitializeAndroidGLCompat() {
 #ifdef Q_OS_ANDROID
   // Qt owns EGL and has already made this widget's GLES context current when
   // initializeGL() calls this function. GL4ES uses that current context.
   static std::once_flag initialized;
   std::call_once(initialized, []() {
-    set_getprocaddress(
-        reinterpret_cast<void *(APIENTRY_GL4ES *)(const char *)>(
-            eglGetProcAddress));
+    set_getprocaddress(toonzGL4ESGetProcAddress);
     set_getmainfbsize([](int *width, int *height) {
       EGLDisplay display = eglGetCurrentDisplay();
       EGLSurface surface = eglGetCurrentSurface(EGL_DRAW);
