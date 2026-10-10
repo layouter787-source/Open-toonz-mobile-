@@ -8,6 +8,12 @@
 #include "timage_io.h"
 #include "tcurves.h"
 
+#include <mutex>
+#ifdef Q_OS_ANDROID
+#include <EGL/egl.h>
+#include <gl4esinit.h>
+#endif
+
 #ifndef __sgi
 #ifdef _WIN32
 #include <cstdlib>
@@ -29,6 +35,36 @@
 //#undef NEW_DRAW_TEXT
 
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Android OpenGL compatibility bootstrap
+//-----------------------------------------------------------------------------
+
+void tglInitializeAndroidGLCompat() {
+#ifdef Q_OS_ANDROID
+  // Qt owns EGL and has already made this widget's GLES context current when
+  // initializeGL() calls this function. GL4ES uses that current context.
+  static std::once_flag initialized;
+  std::call_once(initialized, []() {
+    set_getprocaddress(
+        reinterpret_cast<void *(APIENTRY_GL4ES *)(const char *)>(
+            eglGetProcAddress));
+    set_getmainfbsize([](int *width, int *height) {
+      EGLDisplay display = eglGetCurrentDisplay();
+      EGLSurface surface = eglGetCurrentSurface(EGL_DRAW);
+      EGLint surfaceWidth = 0;
+      EGLint surfaceHeight = 0;
+      if (display != EGL_NO_DISPLAY && surface != EGL_NO_SURFACE) {
+        eglQuerySurface(display, surface, EGL_WIDTH, &surfaceWidth);
+        eglQuerySurface(display, surface, EGL_HEIGHT, &surfaceHeight);
+      }
+      if (width) *width = surfaceWidth > 0 ? surfaceWidth : 1;
+      if (height) *height = surfaceHeight > 0 ? surfaceHeight : 1;
+    });
+    initialize_gl4es();
+  });
+#endif
+}
 
 namespace {
 
