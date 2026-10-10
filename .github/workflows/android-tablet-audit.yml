@@ -7,6 +7,7 @@ on:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/main.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
+      - 'toonz/sources/toonz/android/AndroidManifest.xml'
       - 'toonz/sources/stopmotion/stopmotionserial.cpp'
       - 'doc/android_tablet_port_audit.md'
       - 'doc/android_tablet_dependency_matrix.md'
@@ -16,6 +17,7 @@ on:
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/main.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
+      - 'toonz/sources/toonz/android/AndroidManifest.xml'
       - 'toonz/sources/stopmotion/stopmotionserial.cpp'
       - 'doc/android_tablet_port_audit.md'
       - 'doc/android_tablet_dependency_matrix.md'
@@ -60,6 +62,13 @@ jobs:
           grep -nE 'kis_tablet_support_win8|QGLPixelBuffer|QWindowsWindowFunctions' toonz/sources/toonz/main.cpp || true
           echo '--- Android dependency blocker matrix ---'
           test -f doc/android_tablet_dependency_matrix.md
+          test -f toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'android:screenOrientation="landscape"' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'android:smallScreens="false"' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'android:name="android.app.lib_name"' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q '%%INSERT_APP_LIB_NAME%%' toonz/sources/toonz/android/AndroidManifest.xml
+          grep -q 'ANDROID_PACKAGE_SOURCE_DIR' toonz/sources/toonz/CMakeLists.txt
+          echo 'Qt Android packaging template is tablet/landscape configured and retains androiddeployqt placeholders.'
           grep -q 'does not support the Qt Serial Port module' doc/android_tablet_dependency_matrix.md
           grep -q 'Multimedia Widgets is not supported on Android' doc/android_tablet_dependency_matrix.md
           grep -q 'Android-specific library and link branches' doc/android_tablet_dependency_matrix.md
