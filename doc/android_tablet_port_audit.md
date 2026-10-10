@@ -23,6 +23,12 @@ The GitHub Actions source audit checks Android platform detection, the fail-fast
 
 The Android path also excludes desktop-only helper executables from the default build, omits legacy MOV/3GP proxy sources that launch a separate 32-bit helper, and leaves out the traditional `QPrinter`/`QPrintDialog` command. The separate Xsheet PDF exporter remains in the source list and uses `QPdfWriter`. The manifest declares camera permission and the Qt pencil-test camera selector requests runtime permission through Qt Android Extras. The project also has a checksum-pinned script for preparing the OpenCV Android SDK. These changes remove desktop assumptions and prepare dependencies; they do not yet demonstrate that the full engine compiles.
 
+## Runtime data preparation
+
+The native Android package path now stages the repository's original `stuff/` tree as `assets/stuff` in a generated build-tree package directory and writes a UTF-8 file manifest. The Android branch of `TEnv::initUserStuffDir()` is prepared to copy those read-only assets into `QStandardPaths::AppDataLocation/stuff` on first launch, retaining OpenToonz's existing filesystem-based runtime expectations.
+
+This source change is not yet runtime-verified: the deliberate CMake fail-fast guard still runs before the Android package staging block, so the block has not been exercised by a real Android configure/package/build. The source audit checks only that the intended code path is present.
+
 ## Consequence
 
 The current full OpenToonz target should not be sent directly to an Android NDK build and described as a tablet app. It is likely to fail configuration or compilation before reaching the application because the CMake platform selection and required Qt/dependency set are desktop-oriented.
