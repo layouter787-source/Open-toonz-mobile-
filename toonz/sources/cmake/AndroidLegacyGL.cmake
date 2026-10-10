@@ -94,7 +94,12 @@ target_include_directories(ToonzAndroidGLU
         "${opentoonz_android_glu_SOURCE_DIR}/src/libnurbs/nurbtess"
 )
 target_link_libraries(ToonzAndroidGLU PUBLIC GL)
+# This legacy Mesa GLU snapshot uses the pre-C++17 `register` keyword.
+# Keep this third-party target at C++14 without lowering OpenToonz itself.
 set_target_properties(ToonzAndroidGLU PROPERTIES
+    CXX_STANDARD 14
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS ON
     POSITION_INDEPENDENT_CODE ON
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/opentoonz"
 )
