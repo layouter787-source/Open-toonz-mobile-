@@ -39,6 +39,8 @@ jobs:
           grep -q 'set(BUILD_TARGET_ANDROID ON)' toonz/sources/CMakeLists.txt
           grep -q 'set(BUILD_ENV_ANDROID ON)' toonz/sources/CMakeLists.txt
           grep -q 'Android NDK detected' toonz/sources/CMakeLists.txt
+          awk '/kis_tablet_support_win8.h/ { if (previous ~ /#ifdef _WIN32/) found=1 } { previous=$0 } END { exit !found }' toonz/sources/toonz/main.cpp
+          echo 'Windows-only tablet support include is correctly guarded.'
           echo '--- Qt modules currently required ---'
           grep -nA18 'find_package(Qt5 REQUIRED' toonz/sources/CMakeLists.txt || true
           echo '--- Desktop/tablet-specific include in main.cpp ---'
