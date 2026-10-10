@@ -225,8 +225,17 @@ jobs:
           assert activity is not None
           assert activity.attrib.get(android_ns + "screenOrientation") == "landscape"
           assert activity.attrib.get(android_ns + "exported") == "true"
+          screens = root.find("supports-screens")
+          assert screens is not None, "Tablet-only screen policy is missing"
+          assert screens.attrib.get(android_ns + "smallScreens") == "false"
+          assert screens.attrib.get(android_ns + "normalScreens") == "false"
+          assert screens.attrib.get(android_ns + "largeScreens") == "true"
+          assert screens.attrib.get(android_ns + "xlargeScreens") == "true"
+          features = {node.attrib.get(android_ns + "name"): node.attrib.get(android_ns + "required")
+                      for node in root.findall("uses-feature")}
+          assert features.get("android.hardware.touchscreen") == "true", "Drawing app must require touchscreen hardware"
           assert "%%INSERT_APP_LIB_NAME%%" in Path(manifest_path).read_text()
-          print("PASS: ToonzTab manifest is well-formed, landscape-configured, and preserves Qt deployment placeholders.")
+          print("PASS: ToonzTab manifest is landscape-only, excludes small/normal screens, requires touchscreen hardware, and preserves Qt deployment placeholders.")
 
           # Documents must say what remains blocked instead of claiming an APK.
           assert "Main application graphics startup" in matrix
