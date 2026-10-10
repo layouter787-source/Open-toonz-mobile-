@@ -185,7 +185,6 @@ set(HEADERS
     keyframedata.h
     keyframemover.h
     keyframeselection.h
-    kis_tablet_support_win8.h
     menubarcommandids.h
     moviegenerator.h
     scanlist.h
@@ -310,7 +309,6 @@ set(SOURCES
     soundtrackexport.cpp
     startuppopup.cpp
     subcameramanager.cpp
-    kis_tablet_support_win8.cpp
     timestretchpopup.cpp
     trackerpopup.cpp
     vectorguideddrawingpane.cpp
@@ -408,6 +406,13 @@ set(SOURCES
     ObjectTracker.cpp
     predict3d.cpp
 )
+
+# Windows Pointer Input is a Windows-only implementation. Keep it out of other
+# targets so future Android builds can use Qt's platform tablet events instead.
+if(BUILD_TARGET_WIN)
+    list(APPEND HEADERS kis_tablet_support_win8.h)
+    list(APPEND SOURCES kis_tablet_support_win8.cpp)
+endif()
 
 if(PLATFORM EQUAL 64)
     set(SOURCES
