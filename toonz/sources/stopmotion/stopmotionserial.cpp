@@ -1,7 +1,32 @@
 #include "stopmotionserial.h"
 #include "stopmotion.h"
+
+#ifdef Q_OS_ANDROID
+
+#include <QStringList>
+
+// Qt 5.15 does not ship the Qt Serial Port module for Android. Keep the
+// stop-motion feature APIs available, but explicitly disable external serial
+// lighting/controllers on Android until an Android USB/serial backend exists.
+StopMotionSerial::StopMotionSerial() { m_serialPort = nullptr; }
+StopMotionSerial::~StopMotionSerial() {}
+
+QStringList StopMotionSerial::getAvailableSerialPorts() {
+  return QStringList() << tr("No Device");
+}
+
+bool StopMotionSerial::setSerialPort(QString port) {
+  Q_UNUSED(port);
+  return false;
+}
+
+void StopMotionSerial::sendSerialData() {}
+
+#else
+
 #include <QSerialPort>
 #include <QSerialPortInfo>
+
 //=============================================================================
 //=============================================================================
 
@@ -104,3 +129,5 @@ void StopMotionSerial::sendSerialData() {
   // const TUnit *unit = measure->getCurrentUnit();
   // double newValue = unit->convertTo(value);
 }
+
+#endif  // Q_OS_ANDROID
