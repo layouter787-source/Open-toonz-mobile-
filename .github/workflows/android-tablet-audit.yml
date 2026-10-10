@@ -99,7 +99,9 @@ jobs:
           assert "ANDROID_PACKAGE_SOURCE_DIR" in app_cmake
           assert "Qt5::AndroidExtras" in app_cmake
           assert 'set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android-package")' in app_cmake
+          assert 'file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/android/"' in app_cmake
           assert 'file(COPY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/"' in app_cmake
+          assert "OPEN_TOONZ_STUFF_ASSETS" in app_cmake
           assert "stuff-manifest.txt" in app_cmake
           print("PASS: Android packaging targets the original C++/Qt application and stages its asset tree.")
 
@@ -115,10 +117,12 @@ jobs:
           assert 'QCoreApplication::setApplicationName("ToonzTab")' in main
           assert 'applicationFullName = QStringLiteral("ToonzTab")' in window
           assert "QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)" in tenv
+          assert "QStandardPaths::AppConfigLocation" in tenv
+          assert "systemVarDirectory" in tenv
           assert 'assets:/stuff-manifest.txt' in tenv
           assert 'assets:/stuff/' in tenv
           assert "copyAndroidStuffAssets" in tenv
-          print("PASS: Android startup/branding is separate from desktop GLUT and initializes the writable stuff tree from assets.")
+          print("PASS: Android startup/branding is separate from desktop GLUT and initializes the writable stuff tree and config from assets.")
 
           # Validate the actual Qt Android deployment template.
           manifest_path = "toonz/sources/toonz/android/AndroidManifest.xml"
