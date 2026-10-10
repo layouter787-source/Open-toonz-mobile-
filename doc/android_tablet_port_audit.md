@@ -15,7 +15,7 @@ Scope: initial source-level audit; no Android build is claimed.
 
 ## Implementation progress — 2026-10-10
 
-The top-level CMake configuration detects `ANDROID` before the generic `UNIX` branch and sets dedicated `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` flags. Until an Android-specific link/dependency path exists, configuration still stops with a clear fatal message before building the desktop application.
+The top-level CMake configuration detects `ANDROID` before the generic `UNIX` branch and sets dedicated `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` flags. Until an Android-specific graphics and native-library link path exists, configuration stops with a fatal message before building the desktop application. The remaining blocker includes OpenCV, GLEW/desktop OpenGL assumptions, and other native libraries—not just the Qt modules that were already gated.
 
 The application CMake now adds the Windows Pointer Input adapter only to Windows targets. On Android, the startup path maximizes the window instead of restoring desktop coordinates and skips the desktop-only maximize/layout workaround. The legacy `QGLPixelBuffer` include is also guarded for Android while remaining available to desktop builds. The top-level Qt module list omits `SerialPort` and `MultimediaWidgets` for Android, and `stopmotionserial.cpp` provides a no-device Android implementation while preserving the original desktop serial implementation. See the [dependency matrix](android_tablet_dependency_matrix.md) for the remaining work. These are compatibility steps; they do **not** mean that OpenToonz builds or runs on Android yet.
 
