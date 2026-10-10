@@ -33,7 +33,7 @@ jobs:
         uses: android-actions/setup-android@v4
         with:
           log-accepted-android-sdk-licenses: false
-          packages: 'platform-tools ndk;27.2.12479018 cmake;3.31.6 platforms;android-35'
+          packages: 'platform-tools ndk;21.3.6528147 cmake;3.22.1 platforms;android-35'
 
       - name: Install Qt 5.15.2 for Android
         uses: jurplel/install-qt-action@v4
@@ -42,7 +42,8 @@ jobs:
           host: linux
           target: android
           arch: android
-          modules: 'qtscript qtmultimedia qtsvg qttools qtandroidextras'
+          modules: 'qtscript'
+          archives: 'qtbase qtmultimedia qtsvg qttools qtandroidextras'
           cache: true
 
       - name: Fetch checksum-verified OpenCV Android SDK
@@ -53,7 +54,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk/27.2.12479018"
+          export ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk/21.3.6528147"
           test -f "$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake"
           test -f "$QT_ROOT_DIR/lib/cmake/Qt5/Qt5Config.cmake"
           cmake -S toonz/sources -B build/android-opentoonz-arm64 \
