@@ -16,6 +16,7 @@ on:
       - 'toonz/sources/toonz/main.cpp'
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'doc/android_tablet_port_audit.md'
+      - 'doc/android_tablet_dependency_matrix.md'
       - '.github/workflows/android-tablet-audit.yml'
   workflow_dispatch:
 
