@@ -594,8 +594,13 @@ void MainWindow::changeWindowTitle() {
   /*--- レイアウトファイル名を頭に表示させる ---*/
   if (!m_layoutName.isEmpty()) sceneName.prepend(m_layoutName + " : ");
 
-  QString name = sceneName + " [" + projectName + "] : " +
-                 QString::fromStdString(TEnv::getApplicationFullName());
+  QString applicationFullName =
+      QString::fromStdString(TEnv::getApplicationFullName());
+#ifdef Q_OS_ANDROID
+  applicationFullName = QStringLiteral("ToonzTab");
+#endif
+  QString name =
+      sceneName + " [" + projectName + "] : " + applicationFullName;
 
   if (ShowBuildDateInTitle) {
     name += " (built " __DATE__ " " __TIME__ ")";
