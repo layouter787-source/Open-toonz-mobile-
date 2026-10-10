@@ -27,6 +27,8 @@ Status: source audit; no Android APK build is claimed.
 - `ci/android/graphics-probe/` and `.github/workflows/android-native-graphics.yml` cross-compile and link a small NDK executable referencing fixed-function OpenGL and GLU tessellator symbols. This is a graphics dependency probe, **not** the original editor build and **not** an APK.
 - The compatibility layer is not yet wired into the original OpenToonz application target. Do not remove the top-level Android fail-fast guard until this probe passes and the full application dependency/link path is integrated and validated.
 
+The isolated Android graphics probe now passes on GitHub Actions for `arm64-v8a`: GL4ES, Android GLU, and the custom FreeGLUT font adapter (stroke and bitmap fonts) compile and link against the NDK. The Qt-owned EGL callback setup is also cross-linked. See [the passing graphics workflow](https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38082427304). This test does not compile `OpenToonz`, exercise the GL context on a device, or produce an APK; the native application CMake guard remains in place.
+
 ## Relevant source locations
 
 - [Image I/O CMake](../toonz/sources/image/CMakeLists.txt): excludes the legacy desktop MOV/3GP proxy sources from Android.
