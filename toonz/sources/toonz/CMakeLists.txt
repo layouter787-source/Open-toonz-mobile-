@@ -148,11 +148,21 @@ if(PLATFORM EQUAL 64)
         ../stopmotion/canon.h
         ../stopmotion/stopmotionserial.h
         ../stopmotion/stopmotionlight.h
-        cameracapturelevelcontrol.h
-        penciltestpopup.h
         navtageditorpopup.h
         xshbreadcrumbs.h
     )
+    # Qt-based camera surface avoids the OpenCV-specific pencil-test UI on Android.
+    if(BUILD_TARGET_ANDROID)
+        list(APPEND MOC_HEADERS
+            cameracapturelevelcontrol_qt.h
+            penciltestpopup_qt.h
+        )
+    else()
+        list(APPEND MOC_HEADERS
+            cameracapturelevelcontrol.h
+            penciltestpopup.h
+        )
+    endif()
 else()
     set(MOC_HEADERS
         ${MOC_HEADERS}
@@ -429,11 +439,22 @@ if(PLATFORM EQUAL 64)
         ../stopmotion/canon.cpp
         ../stopmotion/stopmotionserial.cpp
         ../stopmotion/stopmotionlight.cpp
-        cameracapturelevelcontrol.cpp
-        penciltestpopup.cpp
         navtageditorpopup.cpp
         xshbreadcrumbs.cpp
     )
+    # The Android pencil-test UI uses Qt's video surface; desktop 64-bit keeps
+    # the existing OpenCV image-processing implementation.
+    if(BUILD_TARGET_ANDROID)
+        list(APPEND SOURCES
+            cameracapturelevelcontrol_qt.cpp
+            penciltestpopup_qt.cpp
+        )
+    else()
+        list(APPEND SOURCES
+            cameracapturelevelcontrol.cpp
+            penciltestpopup.cpp
+        )
+    endif()
 else()
     set(SOURCES
         ${SOURCES}

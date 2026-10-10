@@ -111,6 +111,10 @@ elseif(BUILD_ENV_APPLE)
 elseif(BUILD_ENV_UNIXLIKE)
     set(_init_SYSTEM_LZO                     ON)
     set(_init_SYSTEM_SUPERLU                 ON)
+elseif(BUILD_ENV_ANDROID)
+    # Never search for host/system LZO or SuperLU when cross-compiling for Android.
+    set(_init_SYSTEM_LZO                     OFF)
+    set(_init_SYSTEM_SUPERLU                 OFF)
 endif()
 
 
@@ -162,6 +166,18 @@ if(BUILD_ENV_APPLE)
     set(THIRDPARTY_LIBS_HINTS "/usr/local/Cellar/" "/opt/include" ${SDKROOT})
 elseif(BUILD_ENV_MSVC OR BUILD_ENV_UNIXLIKE)
     set(THIRDPARTY_LIBS_HINTS ${SDKROOT})
+elseif(BUILD_ENV_ANDROID)
+    # Third-party binaries must be compiled for the selected Android ABI.
+    set(THIRDPARTY_LIBS_HINTS ${SDKROOT})
+    set(OPEN_TOONZ_ANDROID_OPENCV_ROOT "" CACHE PATH
+        "Root of an unpacked OpenCV Android SDK (contains sdk/native/jni/OpenCVConfig.cmake)")
+    if(NOT OPEN_TOONZ_ANDROID_OPENCV_ROOT AND DEFINED ENV{OPENCV_ANDROID_SDK_ROOT})
+        set(OPEN_TOONZ_ANDROID_OPENCV_ROOT "$ENV{OPENCV_ANDROID_SDK_ROOT}")
+    endif()
+    if(NOT OpenCV_DIR AND OPEN_TOONZ_ANDROID_OPENCV_ROOT)
+        set(OpenCV_DIR "${OPEN_TOONZ_ANDROID_OPENCV_ROOT}/sdk/native/jni" CACHE PATH
+            "OpenCV CMake package path for the Android ABI")
+    endif()
 endif()
 
 if(BUILD_ENV_MSVC)

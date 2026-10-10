@@ -6,7 +6,11 @@
 #include "tenv.h"
 #include "tsystem.h"
 #include "filebrowsermodel.h"
+#ifdef Q_OS_ANDROID
+#include "penciltestpopup_qt.h"
+#else
 #include "penciltestpopup.h"
+#endif
 #include "tlevel_io.h"
 #include "toutputproperties.h"
 #include "filebrowserpopup.h"

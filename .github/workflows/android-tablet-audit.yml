@@ -13,6 +13,7 @@ on:
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/toonz/android/AndroidManifest.xml'
       - 'toonz/sources/stopmotion/stopmotionserial.cpp'
+      - 'toonz/sources/stopmotion/stopmotion.cpp'
       - 'toonz/sources/image/CMakeLists.txt'
       - 'toonz/sources/image/tiio.cpp'
       - 'doc/android_tablet_port_audit.md'
@@ -25,6 +26,7 @@ on:
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/toonz/android/AndroidManifest.xml'
       - 'toonz/sources/stopmotion/stopmotionserial.cpp'
+      - 'toonz/sources/stopmotion/stopmotion.cpp'
       - 'toonz/sources/image/CMakeLists.txt'
       - 'toonz/sources/image/tiio.cpp'
       - 'doc/android_tablet_port_audit.md'
@@ -69,6 +71,12 @@ jobs:
           awk 'index($0, "if(NOT BUILD_TARGET_ANDROID)") { inside=1 } index($0, "list(APPEND OPEN_TOONZ_QT_MODULES") && inside { in_list=1 } index($0, "MultimediaWidgets") && in_list { multimedia_widgets=1 } index($0, "SerialPort") && in_list { serial_port=1 } index($0, "endif()") && inside { inside=0 } END { exit !(multimedia_widgets && serial_port) }' toonz/sources/CMakeLists.txt
           grep -q '#ifdef Q_OS_ANDROID' toonz/sources/stopmotion/stopmotionserial.cpp
           grep -q 'QStringList StopMotionSerial::getAvailableSerialPorts' toonz/sources/stopmotion/stopmotionserial.cpp
+          grep -q 'OPEN_TOONZ_ANDROID_OPENCV_ROOT' toonz/sources/CMakeLists.txt
+          grep -q 'OPENCV_ANDROID_SDK_ROOT' toonz/sources/CMakeLists.txt
+          grep -q 'cameracapturelevelcontrol_qt.cpp' toonz/sources/toonz/CMakeLists.txt
+          grep -q 'penciltestpopup_qt.cpp' toonz/sources/toonz/CMakeLists.txt
+          grep -q 'penciltestpopup_qt.h' toonz/sources/toonz/CMakeLists.txt
+          grep -q '#ifdef Q_OS_ANDROID' toonz/sources/stopmotion/stopmotion.cpp
           awk 'index($0, "elseif(BUILD_TARGET_ANDROID)") { android=1 } index($0, "elseif(BUILD_TARGET_UNIX)") { if (android) unixbranch=1; android=0 } index($0, "mov/tiio_mov_proxy.cpp") && android { proxy=1 } END { exit !(unixbranch && !proxy) }' toonz/sources/image/CMakeLists.txt
           awk '/if\(NOT BUILD_TARGET_ANDROID\)/ { inside=1 } /list\(APPEND SOURCES/ && inside { in_sources=1 } /mov\/tiio_mov_proxy.cpp/ && in_sources { mov=1 } /3gp\/tiio_3gp_proxy.cpp/ && in_sources { gp=1 } /endif\(\)/ && inside { inside=0; in_sources=0 } END { exit !(mov && gp) }' toonz/sources/image/CMakeLists.txt
           awk '/#ifndef Q_OS_ANDROID/ { guarded=1 } /if \(IsQuickTimeInstalled\(\)\)/ && guarded { found=1 } /#endif/ && guarded { guarded=0 } END { exit !found }' toonz/sources/image/tiio.cpp
