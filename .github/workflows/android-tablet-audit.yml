@@ -8,6 +8,8 @@ on:
       - 'toonz/sources/toonz/**'
       - 'toonz/sources/toonz/toolbar.cpp'
       - 'toonz/sources/common/tapptools/tenv.cpp'
+      - 'toonz/sources/common/tgl/tgl.cpp'
+      - 'toonz/sources/include/tgl.h'
       - 'toonz/sources/common/tvrender/tofflinegl.cpp'
       - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
       - 'toonz/sources/include/qtofflinegl.h'
@@ -26,6 +28,8 @@ on:
       - 'toonz/sources/toonz/**'
       - 'toonz/sources/toonz/toolbar.cpp'
       - 'toonz/sources/common/tapptools/tenv.cpp'
+      - 'toonz/sources/common/tgl/tgl.cpp'
+      - 'toonz/sources/include/tgl.h'
       - 'toonz/sources/common/tvrender/tofflinegl.cpp'
       - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
       - 'toonz/sources/include/qtofflinegl.h'
@@ -65,6 +69,8 @@ jobs:
               "toonz/sources/toonz/CMakeLists.txt",
               "toonz/sources/toonz/main.cpp",
               "toonz/sources/common/tapptools/tenv.cpp",
+              "toonz/sources/common/tgl/tgl.cpp",
+              "toonz/sources/include/tgl.h",
               "toonz/sources/toonzlib/toonzfolders.cpp",
               "toonz/sources/toonz/mainwindow.cpp",
               "toonz/sources/common/tvrender/tofflinegl.cpp",
@@ -91,6 +97,8 @@ jobs:
           offlineselect = Path("toonz/sources/common/tvrender/tofflinegl.cpp").read_text()
           shading = Path("toonz/sources/stdfx/shadingcontext.cpp").read_text()
           toolbar = Path("toonz/sources/toonz/toolbar.cpp").read_text()
+          tgl_cpp = Path("toonz/sources/common/tgl/tgl.cpp").read_text()
+          tgl_h = Path("toonz/sources/include/tgl.h").read_text()
           matrix = Path("doc/android_tablet_dependency_matrix.md").read_text()
           audit = Path("doc/android_tablet_port_audit.md").read_text()
           roadmap = Path("doc/tablet_port_roadmap.md").read_text()
@@ -150,6 +158,14 @@ jobs:
           assert 'format.setVersion(2, 0)' in offline_cpp
           assert 'defined(Q_OS_ANDROID)' in offlineselect
           assert '#include <GL/glew.h>' in shading
+          assert "tglInitializeAndroidGLCompat" in tgl_h
+          assert "set_getprocaddress(toonzGL4ESGetProcAddress)" in tgl_cpp
+          assert "set_getmainfbsize" in tgl_cpp and "initialize_gl4es()" in tgl_cpp
+          assert "eglGetCurrentDisplay()" in tgl_cpp and "eglGetCurrentSurface(EGL_DRAW)" in tgl_cpp
+          for path in ("toonz/sources/toonz/sceneviewer.cpp", "toonz/sources/toonz/imageviewer.cpp",
+                       "toonz/sources/toonzqt/planeviewer.cpp", "toonz/sources/toonzqt/styleeditor.cpp",
+                       "toonz/sources/toonz/preferencespopup.cpp"):
+              assert "tglInitializeAndroidGLCompat();" in Path(path).read_text(), path
           assert 'glBegin(GL_QUADS)' in shading
           assert 'QGLPixelBuffer' in offline_cpp
           assert '#ifdef Q_OS_ANDROID' in toolbar
