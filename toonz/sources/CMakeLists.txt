@@ -319,7 +319,6 @@ set(OPEN_TOONZ_QT_MODULES
     Xml
     Script
     Widgets
-    PrintSupport
     LinguistTools
     Multimedia
     UiTools
@@ -327,6 +326,7 @@ set(OPEN_TOONZ_QT_MODULES
 if(NOT BUILD_TARGET_ANDROID)
     list(APPEND OPEN_TOONZ_QT_MODULES
         MultimediaWidgets
+        PrintSupport
         SerialPort
       )
 endif()
