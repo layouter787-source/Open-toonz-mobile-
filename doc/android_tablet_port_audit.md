@@ -7,7 +7,7 @@ Scope: initial source-level audit; no Android build is claimed.
 ## Findings verified in this source tree
 
 1. The main application is configured from `toonz/sources/CMakeLists.txt`.
-2. The project identifies only Windows, Apple, and Unix-like build environments. Android currently falls into the generic Unix-like path instead of having a dedicated Android target configuration.
+2. The original configuration treated Android as a generic Unix-like target. The current patch adds explicit `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` detection; the complete Android application target and dependency configuration remain unfinished.
 3. The existing CMake configuration requires a broad desktop Qt 5 module set: Core, Gui, Network, OpenGL, Svg, Xml, Script, Widgets, PrintSupport, LinguistTools, Multimedia, MultimediaWidgets, SerialPort, and UiTools.
 4. On 64-bit non-Apple builds, the configuration requires OpenCV. Additional third-party native dependencies and platform assumptions must also be checked for Android compatibility.
 5. The main app entry point `toonz/sources/toonz/main.cpp` includes desktop UI and graphics components and the `kis_tablet_support_win8.h` tablet-support header. That header and any related Windows-specific code must be isolated behind platform checks or replaced with Qt Android input handling.
