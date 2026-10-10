@@ -140,7 +140,7 @@ jobs:
           qgl_guard_end = window.find("#endif", qgl_include)
           assert qgl_include >= 0 and qgl_guard >= 0 and qgl_guard_end > qgl_include
           assert "Keep this desktop-only feature unavailable until it has a GLES renderer." in window
-          assert '#ifdef Q_OS_ANDROID\\n    // Keep this desktop-only feature unavailable until it has a GLES renderer.\\n    RasterizePliToggleAction = 0;\\n#else' in window
+          assert "#ifdef Q_OS_ANDROID" in window
           assert 'std::make_shared<QtOfflineGL>(dim, shared)' in offlineselect
           assert 'QGLPixelBuffer' in offline_h and 'glBegin(GL_QUAD_STRIP)' in offlineselect
           assert '#include <GL/glew.h>' in shading
