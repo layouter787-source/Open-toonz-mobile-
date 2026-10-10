@@ -82,7 +82,13 @@ add_library(ToonzAndroidGLU STATIC
 target_compile_definitions(ToonzAndroidGLU PRIVATE LIBRARYBUILD)
 # The Android NDK's libc headers no longer expose LONG_MAX indirectly from
 # older GLU translation units; include the standard limits header explicitly.
-target_compile_options(ToonzAndroidGLU PRIVATE -include limits.h)
+target_compile_options(ToonzAndroidGLU PRIVATE
+    -include limits.h
+    # The pinned SGI/Mesa GLU sources predate C++17 and use the removed
+    # 'register' storage-class specifier. Keep this legacy dependency at C++14;
+    # OpenToonz itself retains its configured language standard.
+    $<$<COMPILE_LANGUAGE:CXX>:-std=gnu++14>
+)
 target_include_directories(ToonzAndroidGLU
     PUBLIC
         "${opentoonz_android_glu_SOURCE_DIR}/include"
