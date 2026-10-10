@@ -11,7 +11,7 @@ The Android adaptation should keep as much of the original animation engine and 
 - The original native application entry point is in `toonz/sources/toonz/main.cpp`.
 - The native build configuration is in `toonz/sources/CMakeLists.txt` and the application target configuration is in `toonz/sources/toonz/CMakeLists.txt`.
 - The existing CMake configuration detects the Android NDK, but currently stops with a fatal error before building the full application. That guard exists because the native dependency/link path is incomplete.
-- The earlier separate `mobile-android/` Kotlin/Compose scaffold is being retired and is not the product path. All deliverable implementation must stay in the original C++/Qt application and its Android package.
+- The earlier separate `mobile-android/` Kotlin/Compose scaffold has been removed from this branch and is not the product path. All deliverable implementation must stay in the original C++/Qt application and its Android package.
 - No working Android build of the complete OpenToonz engine has been verified yet.
 
 ## Porting work must happen in the original native codebase
