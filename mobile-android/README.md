@@ -1,30 +1,30 @@
-# OpenToonz Mobile — Android foundation
+# ToonzTab — OpenToonz for Android tablets
 
-This directory is a separate Android-native mobile client foundation alongside the original OpenToonz desktop source. It does not claim that the desktop Qt application already runs on Android.
+ToonzTab is the working product name for an Android-tablet adaptation project based on the OpenToonz codebase. The Motion Studio concept is discontinued and is not part of this project.
 
-## Direction
-- Android phone and tablet UI, landscape-first editor with responsive portrait support.
-- Touch drawing canvas, undo/redo and frame strip foundation.
-- Compact tool rail, large canvas, bottom timeline, lasso/transform tools planned.
-- Future hybrid workflow: frame-by-frame drawing + rigged/stick-segment animation in one project.
-- Local project format and export pipeline to be added in later stages.
+## Product scope
+- Android tablets only; no phone-focused layout or phone support is intended.
+- Tablet-first landscape workspace, stylus/touch input and a large drawing canvas.
+- Professional 2D animation workflow as the target: levels/layers, frame-by-frame drawing, timeline, playback, selection/transforms, project save/load and export.
+- Preserve the upstream OpenToonz desktop source in the repository while Android-specific code lives under `mobile-android/`.
+
+## Current status
+The Android folder is an early native UI/build foundation with a touch-drawing canvas and a preliminary frame strip. It is not yet a port of the full OpenToonz engine and must not be represented as feature-complete. The tablet-only manifest filtering and product identity are initial configuration, not a substitute for testing on real tablets.
 
 ## Build
-Open this directory as a Gradle project, or run Gradle 8.10.2:
+Use JDK 17 and Gradle 8.10.2:
 ```sh
 gradle :app:assembleDebug
 ```
+Run the `Android tablet foundation` GitHub Actions workflow to build a debug APK artifact.
 
-The GitHub Actions workflow builds this Android foundation. The original OpenToonz desktop source remains in the repository root.
-
-## Technical boundary
-OpenToonz is a C++/Qt desktop application with a large dependency stack. Android support requires a deliberate port of reusable core pieces and replacement of desktop-only UI/platform dependencies; changing the target SDK or wrapping the desktop executable is not enough. This first stage establishes the native mobile shell and input canvas, not feature parity with the desktop editor.
+## Required porting work
+OpenToonz is a C++/Qt desktop application with substantial platform dependencies. A genuine Android port needs a dependency audit, Android-compatible replacements for desktop UI/platform layers, and selective reuse of portable C++ core components via the Android NDK/JNI where practical. The current Compose editor is scaffolding, not the OpenToonz renderer or animation engine.
 
 ## Roadmap
-1. Android shell, canvas gestures and drawing strokes.
-2. Layers, frame cels, playback and timeline editing.
-3. Lasso selection, transform handles, brush/eraser library and rulers.
-4. Project save/load and image sequence export.
-5. Port compatible OpenToonz C++ components behind JNI after dependency-by-dependency validation.
-6. Hybrid rigging + hand-drawn frame editing, audio and video export.
-7. Tablet/stylus pressure, performance and accessibility testing.
+1. Tablet-only product configuration and landscape-first workspace.
+2. Proper canvas model, stylus pressure, zoom/pan/rotate, lasso selection and transform.
+3. Real animation levels/cels, layers, timeline editing and playback.
+4. Native project save/load, import and export.
+5. Port reusable OpenToonz engine components after auditing dependencies.
+6. Hardware performance, tablet/stylus testing and APK validation.
