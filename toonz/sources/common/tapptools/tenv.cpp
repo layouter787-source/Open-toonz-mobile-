@@ -791,6 +791,16 @@ void TEnv::initUserStuffDir() {
   if (!configuredRoot.isEmpty() && configuredRoot != userStuffDir) return;
 
   if (!QDir().mkpath(userStuffDir.getParentDir().getQString())) return;
+  // On Android, the writable stuff tree is under AppDataLocation while the
+  // SystemVar.ini remains under QDir::homePath()/.config/ToonzTab.
+  const QString systemVarDirectory =
+      QFileInfo(eg->getSystemVarFile()).absolutePath();
+  if (!QDir().mkpath(systemVarDirectory)) {
+    std::cerr << "Could not create ToonzTab settings directory: "
+              << systemVarDirectory.toStdString() << std::endl;
+    return;
+  }
+
   if (!seedStuffTreeIfMissing(userStuffDir)) return;
   if (configuredRoot.isEmpty()) writeRootVar(eg, userStuffDir);
 #endif
