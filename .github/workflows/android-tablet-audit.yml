@@ -144,6 +144,17 @@ jobs:
           assert 'include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AndroidLegacyGL.cmake")' in top
           print("PASS: Android remains fail-fast by default; an explicit experimental switch enables the original native graphics path.")
 
+          # Android must resolve OpenCV only from an ABI-matched Android SDK,
+          # never from a host desktop installation.
+          opencv_block_start = top.find("if(PLATFORM EQUAL 64)")
+          opencv_block_end = top.find("get_target_property(QtCore_location", opencv_block_start)
+          opencv_block = top[opencv_block_start:opencv_block_end]
+          assert "if(BUILD_TARGET_ANDROID)" in opencv_block
+          assert "find_package(OpenCV 4.1 REQUIRED CONFIG)" in opencv_block
+          assert "OPEN_TOONZ_ANDROID_OPENCV_ROOT" in opencv_block
+          assert "if(NOT OpenCV_FOUND OR NOT OpenCV_LIBS)" in opencv_block
+          print("PASS: Android OpenCV resolution requires the ABI-specific SDK package.")
+
           # The original OpenToonz executable target remains the Android target.
           assert "elseif(BUILD_TARGET_ANDROID)" in app_cmake
           assert "add_executable(OpenToonz" in app_cmake
