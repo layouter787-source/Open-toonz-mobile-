@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
 
     glutStrokeCharacter(GLUT_STROKE_ROMAN, 'A');
     (void)glutStrokeWidth(GLUT_STROKE_ROMAN, 'A');
+    glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, 'A');
 
     GLUtesselator *tess = gluNewTess();
     if (tess != nullptr) gluDeleteTess(tess);
