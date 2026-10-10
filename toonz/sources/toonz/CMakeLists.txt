@@ -484,12 +484,41 @@ endif()
 
 qt5_wrap_cpp(SOURCES ${MOC_HEADERS})
 
-# Qt 5.15 androiddeployqt copies this directory into the Android packaging
-# tree. The top-level CMake guard remains enabled until the Android link branch
-# and all required ABI-compatible libraries are ready.
+# Qt 5.15 androiddeployqt copies this directory into the Android package.
+# Stage it under the build tree so generated assets never pollute the source tree.
+# The top-level CMake guard remains enabled until the native link/dependency path
+# and ABI-compatible libraries are ready.
 if(BUILD_TARGET_ANDROID)
-    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android" CACHE PATH
-        "Android package template directory for ToonzTab")
+    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android-package")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/android/" DESTINATION "${ANDROID_PACKAGE_SOURCE_DIR}")
+
+    # OpenToonz expects its "stuff" tree on a writable filesystem. Bundle the
+    # upstream tree as Android assets and a manifest; TEnv copies it once to the
+    # app-private data directory on first launch.
+    set(OPEN_TOONZ_STUFF_SOURCE_DIR "${CMAKE_SOURCE_DIR}/../../stuff")
+    if(NOT IS_DIRECTORY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/config")
+        message(FATAL_ERROR
+            "The OpenToonz stuff directory was not found: ${OPEN_TOONZ_STUFF_SOURCE_DIR}")
+    endif()
+
+    set(OPEN_TOONZ_ANDROID_ASSETS_DIR "${ANDROID_PACKAGE_SOURCE_DIR}/assets")
+    file(MAKE_DIRECTORY "${OPEN_TOONZ_ANDROID_ASSETS_DIR}")
+    file(COPY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/"
+         DESTINATION "${OPEN_TOONZ_ANDROID_ASSETS_DIR}/stuff")
+
+    file(GLOB_RECURSE OPEN_TOONZ_STUFF_ASSETS
+         CONFIGURE_DEPENDS
+         LIST_DIRECTORIES false
+         RELATIVE "${OPEN_TOONZ_STUFF_SOURCE_DIR}"
+         "${OPEN_TOONZ_STUFF_SOURCE_DIR}/*")
+    file(WRITE "${OPEN_TOONZ_ANDROID_ASSETS_DIR}/stuff-manifest.txt" "")
+    foreach(OPEN_TOONZ_STUFF_ASSET IN LISTS OPEN_TOONZ_STUFF_ASSETS)
+        file(APPEND "${OPEN_TOONZ_ANDROID_ASSETS_DIR}/stuff-manifest.txt"
+             "${OPEN_TOONZ_STUFF_ASSET}\n")
+    endforeach()
+
+    list(LENGTH OPEN_TOONZ_STUFF_ASSETS OPEN_TOONZ_STUFF_ASSET_COUNT)
+    message(STATUS "Staged ${OPEN_TOONZ_STUFF_ASSET_COUNT} OpenToonz stuff assets for ToonzTab")
 endif()
 
 if(BUILD_ENV_MSVC)
