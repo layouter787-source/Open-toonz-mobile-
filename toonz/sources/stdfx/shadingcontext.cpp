@@ -1,7 +1,14 @@
 
 
 // Glew include
+#ifdef Q_OS_ANDROID
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include "tgl.h"
+#else
 #include <GL/glew.h>
+#endif
 
 // TnzCore includes
 #include "tgl.h"
@@ -89,6 +96,11 @@ QSurfaceFormat ShadingContext::Imp::format() {
 #ifdef MACOSX
   fmt.setVersion(3, 2);
   fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
+#elif defined(Q_OS_ANDROID)
+  // The shader effects context must expose GLES 3 for transform feedback and
+  // buffer APIs; Qt owns this offscreen EGL context, GL4ES supplies legacy GL.
+  fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+  fmt.setVersion(3, 0);
 #endif
 
   return fmt;
@@ -118,10 +130,14 @@ ShadingContext::ShadingContext(QOffscreenSurface *surface) : m_imp(new Imp) {
   m_imp->m_context->makeCurrent(m_imp->m_surface);
 
   makeCurrent();
+#ifdef Q_OS_ANDROID
+  tglInitializeAndroidGLCompat();
+#else
   if (GLEW_VERSION_3_2) {
     glewExperimental = GL_TRUE;
   }
   glewInit();
+#endif
   doneCurrent();
 }
 
