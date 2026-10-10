@@ -29,4 +29,4 @@ Status: source audit; no Android APK build is claimed.
 
 ## Safe completion rule
 
-Do not remove the Android fail-fast guard simply to make CMake proceed. Remove it only when the unsupported module references are gated/replaced, the Android-specific library and link branches exist, and a real Android toolchain configures and links the original application target.
+Do not remove the Android fail-fast guard simply to make CMake proceed. Remove it only when unsupported module references are gated/replaced, the Android graphics and native-library link branches exist, required OpenCV/GLEW alternatives are validated, and a real Android toolchain configures and links the original application target.
