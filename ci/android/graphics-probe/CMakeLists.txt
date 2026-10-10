@@ -12,6 +12,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../../../toonz/sources/cmake/AndroidLegacyGL.
 add_executable(toonz_android_gl_probe main.cpp)
 target_link_libraries(toonz_android_gl_probe PRIVATE
     ToonzAndroidGLU
+    ToonzAndroidGLUTFonts
     GL
     ${OPEN_TOONZ_EGL_LIBRARY}
 )
