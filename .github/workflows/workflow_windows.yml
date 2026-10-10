@@ -1,8 +1,10 @@
 name: Windows Build
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: ${{ github.head_ref != '' }}
+  # Keep only the newest run per workflow and branch. Pushes previously used
+  # run_id in the group, so old desktop builds accumulated in the queue.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:
