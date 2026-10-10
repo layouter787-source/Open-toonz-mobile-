@@ -88,6 +88,7 @@ jobs:
           offline_cpp = Path("toonz/sources/common/tvrender/qtofflinegl.cpp").read_text()
           offlineselect = Path("toonz/sources/common/tvrender/tofflinegl.cpp").read_text()
           shading = Path("toonz/sources/stdfx/shadingcontext.cpp").read_text()
+          toolbar = Path("toonz/sources/toonz/toolbar.cpp").read_text()
           matrix = Path("doc/android_tablet_dependency_matrix.md").read_text()
           audit = Path("doc/android_tablet_port_audit.md").read_text()
           roadmap = Path("doc/tablet_port_roadmap.md").read_text()
@@ -134,13 +135,20 @@ jobs:
           assert glut > desktop
           assert 'QCoreApplication::setApplicationName("ToonzTab")' in main
           assert 'applicationFullName = QStringLiteral("ToonzTab")' in window
-          assert '#ifndef Q_OS_ANDROID\\n// Legacy desktop-only offscreen buffers are unavailable on the Android GLES path.\\n#include <QGLPixelBuffer>\\n#endif' in window
+          qgl_include = window.find("#include <QGLPixelBuffer>")
+          qgl_guard = window.rfind("#ifndef Q_OS_ANDROID", 0, qgl_include)
+          qgl_guard_end = window.find("#endif", qgl_include)
+          assert qgl_include >= 0 and qgl_guard >= 0 and qgl_guard_end > qgl_include
+          assert "Keep this desktop-only feature unavailable until it has a GLES renderer." in window
           assert '#ifdef Q_OS_ANDROID\\n    // Keep this desktop-only feature unavailable until it has a GLES renderer.\\n    RasterizePliToggleAction = 0;\\n#else' in window
           assert 'std::make_shared<QtOfflineGL>(dim, shared)' in offlineselect
           assert 'QGLPixelBuffer' in offline_h and 'glBegin(GL_QUAD_STRIP)' in offlineselect
           assert '#include <GL/glew.h>' in shading
           assert 'glBegin(GL_QUADS)' in shading
           assert 'QGLPixelBuffer' in offline_cpp
+          assert '#ifdef Q_OS_ANDROID' in toolbar
+          assert 'setIconSize(QSize(28, 28))' in toolbar
+          assert 'setMinimumSize(48, 48)' in toolbar
           assert "QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)" in tenv
           assert "QStandardPaths::AppConfigLocation" in tenv
           assert "systemVarDirectory" in tenv
