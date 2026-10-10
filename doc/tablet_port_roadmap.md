@@ -24,6 +24,8 @@ Start from `toonz/sources/CMakeLists.txt`, `toonz/sources/toonz/CMakeLists.txt`,
 
 Use a supported Qt-for-Android toolchain, Android SDK/NDK, CMake, and a tablet ABI. Adapt the existing native `OpenToonz` application target and startup path. Do not simply remove the Android guard and hope the desktop target compiles: first resolve the dependency and source-selection blockers that the guard documents.
 
+Before enabling a native Android build, port the renderer as a coherent unit: the offline GL factory in `tofflinegl.cpp`, the `QtOfflineGL` FBO context in `qtofflinegl.cpp`, the legacy PBuffer declarations, and the GLEW/fixed-function shader path in `stdfx/shadingcontext.cpp`. OpenToonz drawing code also uses `glBegin/glVertex`, so an OpenGL ES context alone is not enough. Preserve full raster/vector drawing and shader behavior rather than stubbing them out.
+
 ### 3. Android platform adaptation
 
 Replace desktop-only windowing, file access, dialogs, input and platform integrations with Android-compatible equivalents. Keep the existing scene and animation systems wherever possible. Use Android document access for opening and saving projects. Make graphics/rendering code work with the Android-supported graphics stack.
