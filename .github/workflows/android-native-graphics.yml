@@ -6,11 +6,15 @@ on:
     paths:
       - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
       - 'ci/android/graphics-probe/**'
+      - 'toonz/sources/common/tgl/tgl.cpp'
+      - 'toonz/sources/include/tgl.h'
       - '.github/workflows/android-native-graphics.yml'
   pull_request:
     paths:
       - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
       - 'ci/android/graphics-probe/**'
+      - 'toonz/sources/common/tgl/tgl.cpp'
+      - 'toonz/sources/include/tgl.h'
       - '.github/workflows/android-native-graphics.yml'
   workflow_dispatch:
 
