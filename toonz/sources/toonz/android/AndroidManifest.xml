@@ -23,11 +23,11 @@
         android:name="org.qtproject.qt5.android.bindings.QtApplication"
         android:hardwareAccelerated="true"
         android:extractNativeLibs="true"
-        android:label="-- %%INSERT_APP_NAME%% --">
+        android:label="LayFrame Studio">
 
         <activity
             android:name="org.qtproject.qt5.android.bindings.QtActivity"
-            android:label="-- %%INSERT_APP_NAME%% --"
+            android:label="LayFrame Studio"
             android:exported="true"
             android:screenOrientation="landscape"
             android:launchMode="singleTop"
