@@ -33,6 +33,8 @@ On Android, `TEnv` now uses `QStandardPaths::AppConfigLocation` for the `SystemV
 
 The deeper renderer audit found that the graphics blockers are not confined to app startup. `qtofflinegl.h` still declares `QtOfflineGLPBuffer` with `QGLPixelBuffer`; `qtofflinegl.cpp` configures a desktop compatibility profile; `tofflinegl.cpp` has no Android default renderer branch; and `stdfx/shadingcontext.cpp` includes GLEW, fixed-function matrix calls and immediate-mode drawing. These must be ported together. Simply removing the CMake guard or hiding those APIs behind preprocessor checks would not preserve the original drawing and effects engine.
 
+The isolated Android graphics dependency probe subsequently passed for `arm64-v8a`, including GL4ES, Android GLU tessellation, and the original GLUT stroke/bitmap font API adapter. The original viewer initialization paths now have a Qt-owned EGL/GL4ES bootstrap, and the shader context requests GLES 3 while avoiding GLEW on Android. These are source and cross-link milestones only: the complete `OpenToonz` target is still blocked by its dependency/link path, and there is no APK or on-device renderer validation yet.
+
 ## Consequence
 
 The current full OpenToonz target should not be sent directly to an Android NDK build and described as a tablet app. It is likely to fail configuration or compilation before reaching the application because the CMake platform selection and required Qt/dependency set are desktop-oriented.
