@@ -56,7 +56,7 @@ jobs:
           grep -q '#ifdef Q_OS_ANDROID' toonz/sources/stopmotion/stopmotionserial.cpp
           grep -q 'QStringList StopMotionSerial::getAvailableSerialPorts' toonz/sources/stopmotion/stopmotionserial.cpp
           awk '/kis_tablet_support_win8.h/ { if (previous ~ /#ifdef _WIN32/) found=1 } { previous=$0 } END { exit !found }' toonz/sources/toonz/main.cpp
-          awk '/QGLPixelBuffer/ { if (previous ~ /#ifndef Q_OS_ANDROID/) found=1 } { previous=$0 } END { exit !found }' toonz/sources/toonz/main.cpp
+          awk '/#ifndef Q_OS_ANDROID/ { guarded=1 } /QGLPixelBuffer/ && guarded { found=1 } /#endif/ && guarded { guarded=0 } END { exit !found }' toonz/sources/toonz/main.cpp
           grep -q 'Android tablets use the full landscape activity' toonz/sources/toonz/main.cpp
           grep -q '#if !defined(MACOSX) && !defined(Q_OS_ANDROID)' toonz/sources/toonz/main.cpp
           echo 'Windows-only tablet support include is correctly guarded.'
