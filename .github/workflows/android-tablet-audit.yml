@@ -9,6 +9,12 @@ on:
       - 'toonz/sources/toonz/toolbar.cpp'
       - 'toonz/sources/common/tapptools/tenv.cpp'
       - 'toonz/sources/common/tgl/tgl.cpp'
+      - 'toonz/sources/toonzlib/imagepainter.cpp'
+      - 'toonz/sources/stdfx/shaderinterface.cpp'
+      - 'toonz/sources/stdfx/shaderfx.cpp'
+      - 'toonz/sources/include/stdfx/**'
+      - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
+      - 'toonz/sources/common/tgl/android_glut_fonts.c'
       - 'toonz/sources/include/tgl.h'
       - 'toonz/sources/common/tvrender/tofflinegl.cpp'
       - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
@@ -70,6 +76,13 @@ jobs:
               "toonz/sources/toonz/main.cpp",
               "toonz/sources/common/tapptools/tenv.cpp",
               "toonz/sources/common/tgl/tgl.cpp",
+              "toonz/sources/common/tgl/android_glut_fonts.c",
+              "toonz/sources/cmake/AndroidLegacyGL.cmake",
+              "toonz/sources/include/stdfx/shadingcontext.h",
+              "toonz/sources/include/stdfx/shaderinterface.h",
+              "toonz/sources/stdfx/shaderfx.cpp",
+              "toonz/sources/stdfx/shaderinterface.cpp",
+              "toonz/sources/toonzlib/imagepainter.cpp",
               "toonz/sources/include/tgl.h",
               "toonz/sources/toonzlib/toonzfolders.cpp",
               "toonz/sources/toonz/mainwindow.cpp",
@@ -99,6 +112,13 @@ jobs:
           toolbar = Path("toonz/sources/toonz/toolbar.cpp").read_text()
           tgl_cpp = Path("toonz/sources/common/tgl/tgl.cpp").read_text()
           tgl_h = Path("toonz/sources/include/tgl.h").read_text()
+          gl_compat = Path("toonz/sources/cmake/AndroidLegacyGL.cmake").read_text()
+          glut_fonts = Path("toonz/sources/common/tgl/android_glut_fonts.c").read_text()
+          shader_header = Path("toonz/sources/include/stdfx/shaderinterface.h").read_text()
+          shading_header = Path("toonz/sources/include/stdfx/shadingcontext.h").read_text()
+          shaderfx = Path("toonz/sources/stdfx/shaderfx.cpp").read_text()
+          shaderinterface = Path("toonz/sources/stdfx/shaderinterface.cpp").read_text()
+          imagepainter = Path("toonz/sources/toonzlib/imagepainter.cpp").read_text()
           matrix = Path("doc/android_tablet_dependency_matrix.md").read_text()
           audit = Path("doc/android_tablet_port_audit.md").read_text()
           roadmap = Path("doc/tablet_port_roadmap.md").read_text()
@@ -162,6 +182,15 @@ jobs:
           assert "set_getprocaddress(toonzGL4ESGetProcAddress)" in tgl_cpp
           assert "set_getmainfbsize" in tgl_cpp and "initialize_gl4es()" in tgl_cpp
           assert "eglGetCurrentDisplay()" in tgl_cpp and "eglGetCurrentSurface(EGL_DRAW)" in tgl_cpp
+          assert "set(GL_LIB GL)" in gl_compat
+          assert "set(GLU_LIB ToonzAndroidGLU)" in gl_compat
+          assert "set(GLUT_LIB ToonzAndroidGLUTFonts)" in gl_compat
+          assert "initialize_gl4es()" in tgl_cpp
+          assert "void FGAPIENTRY glutStrokeCharacter" in glut_fonts
+          assert "void FGAPIENTRY glutBitmapCharacter" in glut_fonts
+          for source in (shader_header, shading_header, shaderfx, shaderinterface, imagepainter):
+              assert "#if defined(Q_OS_ANDROID) || defined(__ANDROID__)" in source, "Android GL header guard missing"
+          assert "GL_GLEXT_PROTOTYPES" in shader_header and "GL_GLEXT_PROTOTYPES" in imagepainter
           for path in ("toonz/sources/toonz/sceneviewer.cpp", "toonz/sources/toonz/imageviewer.cpp",
                        "toonz/sources/toonzqt/planeviewer.cpp", "toonz/sources/toonzqt/styleeditor.cpp",
                        "toonz/sources/toonz/preferencespopup.cpp"):
