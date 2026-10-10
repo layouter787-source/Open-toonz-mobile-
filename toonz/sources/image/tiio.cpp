@@ -239,6 +239,7 @@ void initImageIo(bool lightVersion) {
 
 #endif  // _WIN32
 
+#ifndef Q_OS_ANDROID
     if (IsQuickTimeInstalled()) {
       Tiio::useQuicktime(true);
 
@@ -252,8 +253,14 @@ void initImageIo(bool lightVersion) {
       TFileType::declare("3gp", TFileType::RASTER_LEVEL);
       Tiio::defineWriterProperties("3gp", new Tiio::MovWriterProperties());
     }
+#endif  // !Q_OS_ANDROID
+
 #if !defined(_WIN32) || defined(x64) || (defined(_WIN32) && defined(__GNUC__))
+#ifndef Q_OS_ANDROID
     else if (ThirdParty::checkFFmpeg()) {
+#else
+    if (ThirdParty::checkFFmpeg()) {
+#endif
       if (Ffmpeg::checkFormat("mov")) {
         TLevelWriter::define("mov", TLevelWriterFFMov::create, true);
         TLevelReader::define("mov", TLevelReaderFFMov::create);
