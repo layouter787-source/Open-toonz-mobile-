@@ -20,6 +20,8 @@
 #include <GL/glut.h>
 #elif defined(LINUX) || defined(FREEBSD) || defined(HAIKU)
 #include <GL/glut.h>
+#elif defined(Q_OS_ANDROID)
+#include <GL/freeglut.h>
 #else
 #include <GLUT/glut.h>
 #endif
