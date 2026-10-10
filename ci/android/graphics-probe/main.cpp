@@ -1,6 +1,7 @@
 #include <EGL/egl.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <GL/freeglut.h>
 #include <gl4esinit.h>
 
 static void *getProcAddress(const char *name) {
@@ -31,6 +32,9 @@ int main(int argc, char **argv) {
     glVertex2d(0.0, 0.0);
     glVertex2d(1.0, 1.0);
     glEnd();
+
+    glutStrokeCharacter(GLUT_STROKE_ROMAN, 'A');
+    (void)glutStrokeWidth(GLUT_STROKE_ROMAN, 'A');
 
     GLUtesselator *tess = gluNewTess();
     if (tess != nullptr) gluDeleteTess(tess);
