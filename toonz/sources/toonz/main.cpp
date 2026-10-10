@@ -64,7 +64,9 @@
 #include "tvectorbrushstyle.h"
 #include "tfont.h"
 
+#ifdef _WIN32
 #include "kis_tablet_support_win8.h"
+#endif
 
 #ifdef MACOSX
 #include "tipc.h"
