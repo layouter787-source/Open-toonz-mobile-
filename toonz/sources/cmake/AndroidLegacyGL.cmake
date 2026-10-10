@@ -80,6 +80,9 @@ add_library(ToonzAndroidGLU STATIC
     ${OPEN_TOONZ_ANDROID_GLU_CXX_SOURCES}
 )
 target_compile_definitions(ToonzAndroidGLU PRIVATE LIBRARYBUILD)
+# The Android NDK's libc headers no longer expose LONG_MAX indirectly from
+# older GLU translation units; include the standard limits header explicitly.
+target_compile_options(ToonzAndroidGLU PRIVATE -include limits.h)
 target_include_directories(ToonzAndroidGLU
     PUBLIC
         "${opentoonz_android_glu_SOURCE_DIR}/include"
