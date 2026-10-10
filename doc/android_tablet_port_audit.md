@@ -15,9 +15,11 @@ Scope: initial source-level audit; no Android build is claimed.
 
 ## Implementation progress — 2026-10-10
 
-The top-level CMake configuration has now been changed to detect `ANDROID` before the generic `UNIX` branch and set dedicated `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` flags. Until an Android-specific Qt and native-dependency set exists, configuration stops with a clear fatal message before requesting the desktop Qt module bundle. This is a guardrail and a platform-detection fix only; it does **not** mean that OpenToonz builds or runs on Android yet.
+The top-level CMake configuration detects `ANDROID` before the generic `UNIX` branch and sets dedicated `BUILD_TARGET_ANDROID` / `BUILD_ENV_ANDROID` flags. Until an Android-specific link/dependency path exists, configuration still stops with a clear fatal message before building the desktop application.
 
-The GitHub Actions source audit now checks the Android branch, fail-fast guard, Windows-only include guard, and CMake source selection for the Windows pen adapter.
+The application CMake now adds the Windows Pointer Input adapter only to Windows targets. The top-level Qt module list omits `SerialPort` and `MultimediaWidgets` for Android, and `stopmotionserial.cpp` provides a no-device Android implementation while preserving the original desktop serial implementation. See the [dependency matrix](android_tablet_dependency_matrix.md) for the remaining work. These are compatibility steps; they do **not** mean that OpenToonz builds or runs on Android yet.
+
+The GitHub Actions source audit checks Android platform detection, the fail-fast guard, the Windows-only pen adapter, Android Qt-module exclusions, the serial fallback, and the dependency matrix.
 
 ## Consequence
 
