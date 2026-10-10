@@ -303,7 +303,10 @@ if(BUILD_ENV_ANDROID)
 endif()
 
 # Find the QtWidgets library
-find_package(Qt5 REQUIRED
+# These modules are not available on Qt 5.15 for Android. Stop-motion
+# serial accessories are disabled in stopmotionserial.cpp on Android, and
+# Multimedia Widgets is not used by the Android application target.
+set(OPEN_TOONZ_QT_MODULES
     Core
     Gui
     Network
@@ -315,10 +318,16 @@ find_package(Qt5 REQUIRED
     PrintSupport
     LinguistTools
     Multimedia
-    MultimediaWidgets
-    SerialPort
     UiTools
   )
+if(NOT BUILD_TARGET_ANDROID)
+    list(APPEND OPEN_TOONZ_QT_MODULES
+        MultimediaWidgets
+        SerialPort
+      )
+endif()
+
+find_package(Qt5 REQUIRED ${OPEN_TOONZ_QT_MODULES})
 
 if(NOT Qt5Core_FOUND)
     message(FATAL_ERROR "Qt5Core not found check paths")
