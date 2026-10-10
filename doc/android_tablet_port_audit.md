@@ -21,6 +21,8 @@ The application CMake now adds the Windows Pointer Input adapter only to Windows
 
 The GitHub Actions source audit checks Android platform detection, the fail-fast guard, the Windows-only pen adapter, Android Qt-module exclusions, the serial fallback, and the dependency matrix.
 
+The Android path also excludes desktop-only helper executables from the default build, omits legacy MOV/3GP proxy sources that launch a separate 32-bit helper, and leaves out the traditional `QPrinter`/`QPrintDialog` command. The separate Xsheet PDF exporter remains in the source list and uses `QPdfWriter`. These changes remove desktop assumptions from the Android path; they do not yet demonstrate that the full engine compiles.
+
 ## Consequence
 
 The current full OpenToonz target should not be sent directly to an Android NDK build and described as a tablet app. It is likely to fail configuration or compilation before reaching the application because the CMake platform selection and required Qt/dependency set are desktop-oriented.
