@@ -1,0 +1,42 @@
+name: Android Tablet Port Audit
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'toonz/sources/CMakeLists.txt'
+      - 'toonz/sources/toonz/main.cpp'
+      - 'doc/android_tablet_port_audit.md'
+      - '.github/workflows/android-tablet-audit.yml'
+  pull_request:
+    paths:
+      - 'toonz/sources/CMakeLists.txt'
+      - 'toonz/sources/toonz/main.cpp'
+      - 'doc/android_tablet_port_audit.md'
+      - '.github/workflows/android-tablet-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-audit:
+    name: Check Android port assumptions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify source files and report known blockers
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f toonz/sources/CMakeLists.txt
+          test -f toonz/sources/toonz/main.cpp
+          echo '--- CMake platform branches ---'
+          grep -nE 'BUILD_TARGET_WIN|BUILD_TARGET_APPLE|BUILD_TARGET_UNIX|CMAKE_SYSTEM_NAME' toonz/sources/CMakeLists.txt | head -n 35 || true
+          echo '--- Qt modules currently required ---'
+          grep -nA18 'find_package(Qt5 REQUIRED' toonz/sources/CMakeLists.txt || true
+          echo '--- Desktop/tablet-specific include in main.cpp ---'
+          grep -nE 'kis_tablet_support_win8|QGLPixelBuffer|QWindowsWindowFunctions' toonz/sources/toonz/main.cpp || true
+          echo '--- Audit document ---'
+          test -f doc/android_tablet_port_audit.md
+          echo 'Audit checks passed. This is a source audit only; it does not build an Android APK.'
