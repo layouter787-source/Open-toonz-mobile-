@@ -8,6 +8,7 @@ on:
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
       - 'ci/android/fetch-opencv-android-sdk.sh'
+      - 'ci/android/fetch-boost-headers.sh'
       - '.github/workflows/android-native-configure.yml'
   pull_request:
     paths:
@@ -15,6 +16,7 @@ on:
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
       - 'ci/android/fetch-opencv-android-sdk.sh'
+      - 'ci/android/fetch-boost-headers.sh'
       - '.github/workflows/android-native-configure.yml'
   workflow_dispatch:
 
@@ -50,6 +52,10 @@ jobs:
         shell: bash
         run: ci/android/fetch-opencv-android-sdk.sh "$GITHUB_WORKSPACE/thirdparty/opencv-android-sdk"
 
+      - name: Fetch checksum-verified Boost headers
+        shell: bash
+        run: bash ci/android/fetch-boost-headers.sh "$GITHUB_WORKSPACE/thirdparty/boost-android-headers"
+
       - name: Configure the original C++/Qt application (experimental)
         shell: bash
         run: |
@@ -70,6 +76,11 @@ jobs:
             -DCMAKE_PREFIX_PATH="$QT_ROOT_DIR/lib/cmake" \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DOPEN_TOONZ_ANDROID_OPENCV_ROOT="$GITHUB_WORKSPACE/thirdparty/opencv-android-sdk" \
+            -DBOOST_ROOT="$GITHUB_WORKSPACE/thirdparty/boost-android-headers" \
+            -DBoost_INCLUDE_DIR="$GITHUB_WORKSPACE/thirdparty/boost-android-headers" \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DBoost_NO_BOOST_CMAKE=ON \
+            -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
             -DOPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD=ON
 
       - name: Save CMake configure log on failure
