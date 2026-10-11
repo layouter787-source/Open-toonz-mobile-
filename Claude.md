@@ -109,3 +109,16 @@ Consultar/atualizar `doc/android_tablet_dependency_matrix.md`. Entre os riscos j
 - Actions: https://github.com/layouter787-source/Open-toonz-mobile-/actions
 
 **Instrução para Claude:** continua a partir do bloqueio Boost acima. Não recomeçar o projeto, não criar substituto simplificado e não declarar o port completo sem build e teste Android comprovados.
+
+## Atualização de continuação — 2026-10-11 (commit `8e886c49f098b98bbf19bc681f8d0751af6e8a1c`)
+
+Foi integrado ao workflow `.github/workflows/android-native-configure.yml` o script já criado `ci/android/fetch-boost-headers.sh`:
+- O script foi acrescentado aos filtros de `push` e `pull_request`.
+- O workflow agora descarrega os headers Boost verificados por SHA-256 antes da configuração CMake.
+- A configuração passa `BOOST_ROOT`, `Boost_INCLUDE_DIR`, `Boost_NO_SYSTEM_PATHS=ON`, `Boost_NO_BOOST_CMAKE=ON` e `CMAKE_POLICY_DEFAULT_CMP0167=OLD`.
+- Commit da integração: https://github.com/layouter787-source/Open-toonz-mobile-/commit/8e886c49f098b98bbf19bc681f8d0751af6e8a1c
+
+O workflow Android foi iniciado e, na última consulta, ainda estava **em execução**:
+https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38136927081
+
+**Não registar sucesso ainda.** Aguardar o resultado do run 38136927081. Se falhar, ler o log da etapa exata; confirmar primeiro se o script baixou/extraiu Boost corretamente e depois corrigir o próximo bloqueio real. O APK e a compilação completa Android continuam sem comprovação.
