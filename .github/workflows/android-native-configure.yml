@@ -13,6 +13,7 @@ on:
       - '.github/workflows/android-native-configure.yml'
   pull_request:
     paths:
+      - 'toonz/sources/**'
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
