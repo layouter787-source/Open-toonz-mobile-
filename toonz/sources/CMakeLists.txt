@@ -359,6 +359,18 @@ find_package(Qt5 REQUIRED ${OPEN_TOONZ_QT_MODULES})
 if(NOT Qt5Core_FOUND)
     message(FATAL_ERROR "Qt5Core not found check paths")
 endif()
+
+# The Android cross-build does not pass through the desktop find_package(Qt5Widgets)
+# path above. Export Qt include directories globally for legacy targets that include
+# Qt headers directly (for example <QMutex>) instead of linking imported Qt targets.
+if(BUILD_ENV_ANDROID)
+    include_directories(SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Gui_INCLUDE_DIRS}
+        ${Qt5Network_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
+    )
+endif()
 message(STATUS "Qt5 Modules: ${Qt5Core_VERSION}")
 
 set(QT_MINIMUM_VERSION 5.5.0)
