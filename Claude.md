@@ -174,3 +174,91 @@ Correção adicional aplicada em `tnztypes.h`: acrescentado `defined(__ANDROID__
 Nova execução Android Native iniciada para esse commit: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208331733
 
 Estado no início desta atualização: checkout a decorrer; a configuração e compilação deste novo commit ainda não foram confirmadas. Quando a compilação avançar, recolher o próximo erro raiz do log e corrigir o código original por etapas. Não declarar APK nem editor funcional até build, empacotamento e teste em tablet.
+
+
+## Relatório de erros verificados — 2026-10-12 (handoff obrigatório)
+
+### Estado exato observado
+
+O workflow de compilação do código original está em:
+- Run que chegou à ligação e falhou: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208792779
+- Run anterior, que falhou na compilação de unidades C++: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208331733
+- Commit com as últimas alterações CMake/cabeçalhos antes desta documentação: https://github.com/layouter787-source/Open-toonz-mobile-/commit/68e9f55891882ca689ba8c49b6fc2dfdf3a18e18
+
+No run 38208792779, checkout, instalação de SDK/NDK/CMake, Qt 5.15.2, obtenção do SDK OpenCV Android, obtenção dos headers Boost e configuração CMake concluíram com sucesso. A falha está na compilação/ligação do target original. O job terminou em failure; o artefacto existente é de logs, não APK. Não existe APK funcional confirmado.
+
+### Erro A — conflito de headers e declaração de OpenGL ES
+
+No run 38208792779, a primeira falha C++ fatal registada foi:
+
+- NDK: sysroot/usr/include/GLES2/gl2.h:481 — typedef redefinition with different types para o ponteiro de função de glShaderSource.
+- NDK: sysroot/usr/include/GLES2/gl2.h:624 — conflicting types for glShaderSource.
+- A assinatura conflitante usa const GLchar *const * versus const GLchar **.
+- Unidade que falhou: toonzlib/imagebuilders.cpp.o.
+
+Hipótese a investigar, ainda não comprovada: mistura de headers GLES2 do NDK com headers OpenGL desktop/GL4ES ou declarações duplicadas/ordem de include incompatível. Localizar a declaração concorrente e corrigir a seleção de headers/macros para Android; não resolver com casts ou silenciamento indiscriminado.
+
+### Erro B — centenas de símbolos indefinidos ao ligar libtnzbase
+
+O mesmo run continuou em paralelo e falhou ao ligar:
+
+- Target: tnzbase/android-build/libs/arm64-v8a/libtnzbase_arm64-v8a.so.
+- Erro final: clang++: error: linker command failed with exit code 1.
+- A falha propaga-se por gmake para o target OpenToonz.
+
+Famílias de símbolos que aparecem como undefined reference nos logs:
+- Serialização/XML: TIStream, TOStream e os respetivos métodos/construtores/destrutores.
+- Caminhos e sistema: TFilePath, TFileStatus, TSystem, TEnv, Tifstream, to_string/to_wstring e isDouble.
+- Propriedades/persistência: TProperty, TPersistDeclaration, TStringId e TSmartObject.
+- Raster/imagem: TRaster, TRasterImage, TToonzImage, TVectorImage, TStroke, TPalette, TLevel e TRop.
+- Pixels e conversões: TPixelRGBM32/64, TPixelGR8, toPixel32, toPixel64, toPixelD, toPixelF e toLinear.
+- Cache e efeitos: TImageCache, TTile, TConsts e funções de geometria como cubicRoot.
+- RTTI/vtables: typeinfo para TRaster, TImage, TRasterImage, TToonzImage, TVectorImage e vtable/typeinfo de TProperty.
+
+Isto é uma falha ampla de ligação, não um único símbolo isolado. Investigar os targets CMake e a sua composição:
+1. Verificar se os .cpp que definem esses símbolos entram nos targets Android correspondentes.
+2. Comparar a lista de fontes e dependências de tnzbase/tnzcore/tnzlib com um target desktop que compila, sem copiar dependências desktop indisponíveis.
+3. Verificar dependências transitivas, ordem/visibilidade de link, macros de export/import e definições condicionais de plataforma.
+4. Verificar compatibilidade de ABI/compilador e flags C++ entre as bibliotecas que são compiladas separadamente.
+5. Confirmar se algum source file está excluído por macros Android ou se uma seleção de fontes específica de plataforma deixou implementações de fora.
+6. Só depois de corrigir a causa estrutural, voltar a compilar; não adicionar stubs vazios para fazer o link passar.
+
+### Erro C — fontes de scanner que precisam de decisão de portabilidade
+
+O log inclui unidades em toonz/sources/tnzbase/tscanner, incluindo tscanner.cpp, tscannerutil.cpp, tscannerepson.cpp e tscannertwain.cpp. A compilação de código associado a scanner pode ser específico de desktop/hardware. Auditar CMake e macros de plataforma: decidir explicitamente o que deve ser desativado no Android e o que precisa de uma implementação Android. Não afirmar que isto causa todos os símbolos indefinidos sem provar a ligação.
+
+### Erros anteriores e situação após a última tentativa
+
+No run 38208331733 foram observados:
+- toonz/sources/include/tpixel.h:199 — no matching constructor for initialization of TPixelRGBM64.
+- toonz/sources/include/tthreadmessage.h:12 — fatal error: QMutex file not found.
+
+As alterações dos commits dd0288ecb8162aa5e65578596038cb5120058a34 e 68e9f55891882ca689ba8c49b6fc2dfdf3a18e18 ajustaram a seleção de pixel para Android e expuseram diretórios de include do Qt para targets Android. O run 38208792779 ultrapassou estas falhas iniciais e chegou à ligação. Registar como aparentemente ultrapassadas no último log, mas confirmar que não reaparecem; não confundir com sucesso de build.
+
+Também foi corrigida a precedência do ramo LP64 em tnztypes.h para que Android ARM64 não selecione os tipos legados __int32/__int64. A seleção de ordem de canais de pixel para Android foi ajustada em tmachine.h.
+
+### Avisos observados, não fatais no run atual
+
+- Aviso de depreciação do Android SDK Manager/sdmanager.
+- GL4ES: avisos de dangling else e de precedência lógica.
+- Configuração CMake anterior: avisos da política CMP0175 associados a add_custom_command DEPENDS.
+- Avisos Node de depreciação punycode e url.parse vindos de ações/scripts de CI.
+
+Não confundir estes avisos com as falhas fatais de glShaderSource e da ligação de tnzbase.
+
+### Ordem de trabalho recomendada para o próximo agente (Claude)
+
+1. Ler este relatório, README.md, doc/android_tablet_dependency_matrix.md e doc/android_tablet_port_audit.md.
+2. Abrir o artefacto android-native-build-logs do run 38208792779 e obter o log completo; usar o primeiro erro fatal real, não as mensagens finais em cascata.
+3. Resolver primeiro o conflito de declaração glShaderSource, verificando todos os headers de GL incluídos por imagebuilders.cpp e a configuração GL4ES/Android.
+4. Em seguida investigar a composição de tnzbase e dependências dos símbolos indefinidos, comparando com a configuração desktop e com a matriz de dependências.
+5. Fazer uma correção pequena por vez e deixar o workflow reproduzir o resultado. Não substituir implementações por stubs, não usar bibliotecas host Linux, não remover a guarda OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD.
+6. Se necessário, ajustar apenas o workflow de CI para capturar diagnósticos mais úteis; o responsável pelo port deve corrigir o C++/CMake original.
+7. Atualizar este relatório e README após cada run com o commit, link, fase atingida e erro novo.
+8. Só criar/afirmar APK quando existir artefacto APK real; a seguir, instalar e testar num tablet Android físico.
+
+### Artefactos e logs
+
+O workflow .github/workflows/android-native-configure.yml atualmente faz upload de android-native-build-logs quando falha. O artefacto do run 38208792779 foi confirmado com esse nome. O workflow não cria APK: compila apenas o target CMake OpenToonz. É necessário desenvolver uma fase separada de empacotamento Qt Android depois de o target original compilar e ligar corretamente.
+
+**Instrução explícita:** o trabalho prioritário é corrigir os erros reais descritos acima no OpenToonz original. Não redesenhar a aplicação, não criar editor substituto, não declarar o projeto pronto por ter configurado CMake.
