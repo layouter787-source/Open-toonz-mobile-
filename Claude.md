@@ -163,3 +163,14 @@ Commits:
 - `569a1f98aa80789ebf5f290f5b23d92e374dd015` — https://github.com/layouter787-source/Open-toonz-mobile-/commit/569a1f98aa80789ebf5f290f5b23d92e374dd015
 
 A nova execução automática está em fila: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208119259. É necessário aguardar e ler o próximo erro real; o build ainda não terminou com sucesso e nenhum APK foi validado.
+
+
+## Atualização de continuação — 2026-10-12: corrigida precedência do ramo LP64
+
+A compilação do run 38208121480 falhou novamente com `__int32`/`__int64` em `tnztypes.h`. A inspeção do ficheiro na branch revelou a causa específica: embora existisse um ramo posterior com `__ANDROID__` e `<stdint.h>`, Android ARM64 define `__LP64__`, e o ramo LP64 anterior era selecionado primeiro. Portanto, a primeira correção não era suficiente.
+
+Correção adicional aplicada em `tnztypes.h`: acrescentado `defined(__ANDROID__)` à lista de exceções da condição LP64, para Android cair no ramo de tipos portáveis. Commit: https://github.com/layouter787-source/Open-toonz-mobile-/commit/cb45931fb482268a0f4ac240a849934911e72334
+
+Nova execução Android Native iniciada para esse commit: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208331733
+
+Estado no início desta atualização: checkout a decorrer; a configuração e compilação deste novo commit ainda não foram confirmadas. Quando a compilação avançar, recolher o próximo erro raiz do log e corrigir o código original por etapas. Não declarar APK nem editor funcional até build, empacotamento e teste em tablet.
