@@ -4,6 +4,7 @@ on:
   push:
     branches: [master, main, 'mobile/**']
     paths:
+      - 'toonz/sources/**'
       - 'toonz/sources/CMakeLists.txt'
       - 'toonz/sources/toonz/CMakeLists.txt'
       - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
@@ -27,7 +28,7 @@ jobs:
   configure-original-native-target:
     name: Configure original OpenToonz target for Android ARM64
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -82,6 +83,23 @@ jobs:
             -DBoost_NO_BOOST_CMAKE=ON \
             -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
             -DOPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD=ON
+
+      - name: Compile the original OpenToonz editor for Android ARM64 (experimental)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/android-opentoonz-arm64 --target OpenToonz --parallel 2 2>&1 | tee build/android-opentoonz-arm64/android-build.log
+
+      - name: Save Android native build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-native-build-logs
+          path: |
+            build/android-opentoonz-arm64/android-build.log
+            build/android-opentoonz-arm64/CMakeFiles/CMakeOutput.log
+            build/android-opentoonz-arm64/CMakeFiles/CMakeError.log
+          if-no-files-found: ignore
 
       - name: Save CMake configure log on failure
         if: failure()
