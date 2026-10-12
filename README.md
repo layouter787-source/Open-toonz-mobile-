@@ -41,3 +41,22 @@ A auditoria estática verifica condições do código e do manifesto; não é um
 ## Origem e licença
 
 Este projeto deriva do [OpenToonz](https://github.com/opentoonz/opentoonz), um programa de animação 2D de código aberto. Esta é uma adaptação independente, não uma versão oficial do OpenToonz. Preservar `LICENSE.txt`, os avisos de direitos de autor e as licenças dos componentes de terceiros ao distribuir código ou binários.
+
+
+## Estado da compilação Android — 12 de outubro de 2026
+
+**Estado: bloqueado na ligação C++ nativa; não existe APK gerado/validado.** A configuração CMake consegue concluir e o workflow instala Android SDK/NDK, Qt 5.15.2, OpenCV Android e os headers Boost verificados. O alvo original ainda falha ao compilar/ligar.
+
+- [Run mais recente, falha na ligação](https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208792779)
+- [Run anterior, erros iniciais de compilação](https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208331733)
+- O workflow guarda os logs como artefactos da execução. O relatório completo de diagnóstico e as tarefas para o próximo agente estão em [Claude.md](./Claude.md).
+
+### Erros encontrados nos logs
+
+1. **Conflito de declaração OpenGL ES:** o NDK GLES2/gl2.h acusa typedef redefinition with different types e conflicting types for glShaderSource. A assinatura com const GLchar *const * entra em conflito com outra que usa const GLchar **. Investigar a mistura de headers GLES2/GL desktop/GL4ES e a ordem/condições de inclusão.
+2. **Ligação de tnzbase falha com muitos símbolos não resolvidos:** entre eles TIStream, TOStream, TFilePath, TEnv, TSystem, TProperty, TRaster, TRop, TImageCache, TPalette, TToonzImage, TPixelRGBM32/64 e funções de conversão de pixels. O erro final é clang++: error: linker command failed; o target libtnzbase_arm64-v8a.so falha e, em cascata, falha o target OpenToonz. Investigar fontes omitidas dos targets, bibliotecas e dependências entre targets, definições condicionais de plataforma e visibilidade/exportação de símbolos.
+3. **Possível código de scanner desktop no alvo Android:** o log contém objetos de tscanner e tscannertwain.cpp. Confirmar quais drivers são suportados no Android e excluir/portar os que dependem de plataformas desktop, sem remover funcionalidades essenciais sem decisão explícita.
+4. **Avisos não fatais:** sdkmanager está deprecated; fontes GL4ES emitem avisos de dangling-else e precedência lógica; o CMake reportou avisos de política CMP0175 na configuração anterior. Não são a causa fatal atual, mas devem ser registados e avaliados separadamente.
+5. **Problemas anteriores que não aparecem como erros fatais no run mais recente:** QMutex file not found e ausência de construtor de TPixelRGBM64 apareceram no run 38208331733. O run 38208792779 passou por essas unidades e avançou até à ligação; confirmar que continuam resolvidos em builds seguintes.
+
+Não declarar sucesso com base apenas em configuração CMake ou compilação parcial. O critério continua a ser: C++ original ligado para ARM64, APK Qt empacotado, instalação e teste num tablet Android real.
