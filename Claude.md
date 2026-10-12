@@ -148,3 +148,18 @@ Run de compilação em curso no momento da atualização: https://github.com/lay
 A alteração seguinte de filtro foi registada no commit `32edc41fb613ce6ad65e01d39ee7b0a8df690fa8`.
 
 **Instrução de continuação:** verificar primeiro o run 38205813101; ler o erro real se a compilação falhar e corrigir um bloqueio de cada vez. Não declarar APK pronto, não remover a guarda experimental e não confundir configuração com build.
+
+
+## Atualização de continuação — 2026-10-12: primeiro erro de compilação corrigido
+
+A execução `38205813101` chegou à compilação do código C++ original, mas falhou dentro da biblioteca `toonzlib`. O primeiro erro raiz foi em `toonz/sources/include/tnztypes.h`: no Android ARM64, a seleção de tipos caía num ramo legado com `__int32`/`__int64`, que não são tipos do Clang/NDK; daí vieram erros em cascata como `TUINT32` desconhecido. `tmachine.h` também não reconhecia Android como uma plataforma com ordem de canais definida.
+
+Correções registadas:
+- `toonz/sources/include/tnztypes.h`: Android usa `<stdint.h>` e tipos portáveis `int32_t`/`uint32_t`/`int64_t`/`uint64_t`.
+- `toonz/sources/include/tmachine.h`: Android usa a mesma seleção de ordem de canais BGRM já utilizada para Linux/BSD/Haiku.
+
+Commits:
+- `880312f0e37e51877410a516356670c5b0c055fa` — https://github.com/layouter787-source/Open-toonz-mobile-/commit/880312f0e37e51877410a516356670c5b0c055fa
+- `569a1f98aa80789ebf5f290f5b23d92e374dd015` — https://github.com/layouter787-source/Open-toonz-mobile-/commit/569a1f98aa80789ebf5f290f5b23d92e374dd015
+
+A nova execução automática está em fila: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208119259. É necessário aguardar e ler o próximo erro real; o build ainda não terminou com sucesso e nenhum APK foi validado.
