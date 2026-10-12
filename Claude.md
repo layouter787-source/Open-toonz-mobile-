@@ -122,3 +122,29 @@ O workflow Android foi iniciado e, na última consulta, ainda estava **em execu�
 https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38136927081
 
 **Não registar sucesso ainda.** Aguardar o resultado do run 38136927081. Se falhar, ler o log da etapa exata; confirmar primeiro se o script baixou/extraiu Boost corretamente e depois corrigir o próximo bloqueio real. O APK e a compilação completa Android continuam sem comprovação.
+
+
+## Atualização de continuação — 2026-10-12: primeira configuração Android passou
+
+O run 38136927081 terminou com sucesso na etapa de configuração CMake. O log confirmou:
+- `-- Configuring done`
+- `-- Generating done`
+- `-- Build files have been written to: build/android-opentoonz-arm64`
+- Os headers Boost foram obtidos e validados, e o SDK Android OpenCV também foi preparado.
+- A configuração reportou warnings CMake de `add_custom_command(... DEPENDS)` sob CMP0175. São warnings, não impediram a geração.
+
+Resultado: **configuração CMake concluída; isto ainda não é compilação C++ nem APK**.
+
+### Próxima etapa: compilar o alvo original
+Foi alterado `.github/workflows/android-native-configure.yml` para executar depois da configuração:
+```bash
+cmake --build build/android-opentoonz-arm64 --target OpenToonz --parallel 2
+```
+A workflow agora tem timeout de 90 minutos, observa alterações em `toonz/sources/**` nos eventos push e pull_request e carrega logs de compilação se falhar.
+
+Commit que introduziu a etapa de compilação: https://github.com/layouter787-source/Open-toonz-mobile-/commit/747e14c640da3c26cd5d7caedb7aded0b4425195
+Run de compilação em curso no momento da atualização: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38205813101
+
+A alteração seguinte de filtro foi registada no commit `32edc41fb613ce6ad65e01d39ee7b0a8df690fa8`.
+
+**Instrução de continuação:** verificar primeiro o run 38205813101; ler o erro real se a compilação falhar e corrigir um bloqueio de cada vez. Não declarar APK pronto, não remover a guarda experimental e não confundir configuração com build.
