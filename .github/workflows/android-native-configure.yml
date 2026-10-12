@@ -91,6 +91,32 @@ jobs:
           set -euo pipefail
           cmake --build build/android-opentoonz-arm64 --target OpenToonz --parallel 2 2>&1 | tee build/android-opentoonz-arm64/android-build.log
 
+      - name: Extract concise native build diagnostics
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          mkdir -p build/android-opentoonz-arm64
+          LOG=build/android-opentoonz-arm64/android-build.log
+          REPORT=build/android-opentoonz-arm64/android-build-diagnostics.txt
+          {
+            echo "ToonzTab Android ARM64 native build diagnostics"
+            echo "Commit: $GITHUB_SHA"
+            echo "Workflow run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo
+            if [ -f "$LOG" ]; then
+              echo "=== First compiler/linker/configuration errors (up to 160 lines) ==="
+              grep -nE 'error:|fatal error:|undefined reference|clang\+\+: error|CMake Error|FAILED:|ninja: build stopped|gmake\[[0-9]+\]: \*\*\*' "$LOG" | head -n 160
+              echo
+              echo "=== Failure summary ==="
+              grep -E 'clang\+\+: error: linker command failed|No rule to make target|CMake Generate step failed|CMake Error|Error [0-9]+|gmake\[[0-9]+\]: \*\*\*' "$LOG" | tail -n 40
+            else
+              echo "No android-build.log was produced. Check the configure step and CMake logs."
+            fi
+          } > "$REPORT"
+          cat "$REPORT"
+          exit 0
+
       - name: Save Android native build logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -98,6 +124,7 @@ jobs:
           name: android-native-build-logs
           path: |
             build/android-opentoonz-arm64/android-build.log
+            build/android-opentoonz-arm64/android-build-diagnostics.txt
             build/android-opentoonz-arm64/CMakeFiles/CMakeOutput.log
             build/android-opentoonz-arm64/CMakeFiles/CMakeError.log
           if-no-files-found: ignore
