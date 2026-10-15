@@ -17,9 +17,18 @@
    Qt owns EGL, and those headers include GLES2 prototypes that conflict with
    GL4ES' compatibility declarations. These layouts match FreeGLUT's private
    font structures at the pinned source revision. */
-typedef struct { GLfloat X, Y; } SFG_StrokeVertex;
-typedef struct { int Number; const SFG_StrokeVertex *Vertices; } SFG_StrokeStrip;
-typedef struct { GLfloat Right; int Number; const SFG_StrokeStrip *Strips; } SFG_StrokeChar;
+typedef struct {
+  GLfloat X, Y;
+} SFG_StrokeVertex;
+typedef struct {
+  int Number;
+  const SFG_StrokeVertex *Vertices;
+} SFG_StrokeStrip;
+typedef struct {
+  GLfloat Right;
+  int Number;
+  const SFG_StrokeStrip *Strips;
+} SFG_StrokeChar;
 typedef struct {
   char *Name;
   int Quantity;
@@ -45,15 +54,15 @@ extern SFG_Font fgFontTimesRoman10;
 extern SFG_Font fgFontTimesRoman24;
 
 /* Match the opaque pointer IDs used by classic GLUT and FreeGLUT headers. */
-void *glutStrokeRoman = 0;
-void *glutStrokeMonoRoman = 0;
-void *glutBitmap9By15 = 0;
-void *glutBitmap8By13 = 0;
-void *glutBitmapTimesRoman10 = 0;
-void *glutBitmapTimesRoman24 = 0;
-void *glutBitmapHelvetica10 = 0;
-void *glutBitmapHelvetica12 = 0;
-void *glutBitmapHelvetica18 = 0;
+void *glutStrokeRoman         = 0;
+void *glutStrokeMonoRoman     = 0;
+void *glutBitmap9By15         = 0;
+void *glutBitmap8By13         = 0;
+void *glutBitmapTimesRoman10  = 0;
+void *glutBitmapTimesRoman24  = 0;
+void *glutBitmapHelvetica10   = 0;
+void *glutBitmapHelvetica12   = 0;
+void *glutBitmapHelvetica18   = 0;
 #define GLUT_STROKE_ROMAN ((void *)&glutStrokeRoman)
 #define GLUT_STROKE_MONO_ROMAN ((void *)&glutStrokeMonoRoman)
 #define GLUT_BITMAP_9_BY_15 ((void *)&glutBitmap9By15)
@@ -112,8 +121,8 @@ void FGAPIENTRY glutBitmapCharacter(void *fontID, int character) {
   glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
   glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_FALSE);
   glPixelStorei(GL_UNPACK_LSB_FIRST, GL_FALSE);
-  glBitmap(face[0], font->Height, font->xorig, font->yorig,
-           (GLfloat)face[0], 0.0f, face + 1);
+  glBitmap(face[0], font->Height, font->xorig, font->yorig, (GLfloat)face[0],
+           0.0f, face + 1);
 }
 
 GLfloat FGAPIENTRY glutStrokeWidthf(void *fontID, int character) {
