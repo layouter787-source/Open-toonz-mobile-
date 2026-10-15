@@ -1850,3 +1850,19 @@ O clang-format apontou desalinhamento em declarações globais e macros em `andr
 
 ### Próxima validação
 Os dois commits disparam novas execuções CI. Verificar os runs mais recentes antes de fazer mais alterações. A compilação Android ainda não terminou e nenhum APK foi gerado; os artefactos disponíveis são apenas logs de diagnóstico.
+
+
+## Continuação — 2026-10-15: falha real seguinte no build ARM64
+
+O run Android https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38713362178 passou por SDK/NDK, Qt, OpenCV, Boost e configuração CMake, mas falhou ao compilar o target original. O diagnóstico anexado ao job identifica:
+
+- `toonz/sources/include/toonz4.6/machine.h:25`: `@UNKNOWN PLATFORM @` foi emitido para Android, porque a seleção de ordem de canais não incluía `__ANDROID__`.
+- Em cascata, `pixel.h` não define `LPIXEL`; isto provoca erros em `raster.h` e `tropcm.cpp`.
+- O check clang-format continua a assinalar o alinhamento das atribuições dos identificadores GLUT em `android_glut_fonts.c`.
+
+### Correção aplicada nesta atualização
+
+- Adicionar Android à seleção BGRM em `machine.h`, alinhada com a seleção já usada por Linux/BSD/Haiku. Isto corrige a causa de plataforma que impede os typedefs LPIXEL/SPIXEL de serem criados.
+- Reformatar as atribuições consecutivas dos identificadores GLUT para alinhar os sinais `=` segundo clang-format.
+
+Commits de código: consultar os dois commits consecutivos no histórico da branch; a documentação foi acrescentada depois das alterações de código. O próximo passo é aguardar os novos checks e continuar a corrigir apenas o primeiro erro real do log. **Ainda não existe APK Android compilado/empacotado confirmado**; o job falhou antes de Java, androiddeployqt e upload do APK.
