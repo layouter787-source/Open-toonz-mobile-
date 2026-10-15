@@ -178,16 +178,17 @@ message(STATUS "ToonzTab: configured pinned GL4ES + Android GLU compatibility li
 #
 # Qt for Android includes <GLES2/gl2.h> (Khronos: const GLchar *const *string)
 # while OpenToonz includes GL4ES' <GL/gl.h> through tgl.h. Both end up in the
-# same translation unit (e.g. toonzlib/imagebuilders.cpp) and the compiler
-# reports "typedef redefinition with different types" / "conflicting types for
-# glShaderSource" when one of them declares `const GLchar **`.
+# same translation unit (e.g. toonzlib/imagebuilders.cpp). The CI log of run
+# 38208792779 showed GL4ES' include/GL/glext.h declaring both the
+# PFNGLSHADERSOURCEPROC typedef (line 5594) and glShaderSource (line 5500) with
+# `const GLchar **`, which conflicts with the NDK header.
 #
 # The pinned GL4ES headers are NOT edited in the fetched source tree (GL4ES
 # itself is compiled against them). Instead, only when the offending
 # `const GLchar **` form is actually present, a patched COPY of the include
 # directory is created in the build tree and put first on the include path for
 # the OpenToonz modules. If nothing needs patching, nothing changes.
-# The relevant lines are printed so the next CI log shows the real header text.
+# The relevant lines are printed so the CI log shows the real header text.
 # ---------------------------------------------------------------------------
 set(OPEN_TOONZ_GL4ES_GLEXT "${opentoonz_gl4es_SOURCE_DIR}/include/GL/glext.h")
 if(EXISTS "${OPEN_TOONZ_GL4ES_GLEXT}")
@@ -236,34 +237,35 @@ endif()
 # targets already exist. Only sibling OpenToonz targets are added here; third
 # party libraries (JPEG, LZ4, TIFF, PNG, SuperLU, OpenBLAS, MyPaint, ...) are
 # NOT provided by this block and still need real Android builds.
+#
+# NOTE: dependencies are passed as separate function arguments. An earlier
+# version stored them in a CMake list of strings such as "tnzext|tnzcore;tnzbase";
+# since ';' is the list separator even inside quotes, the outer list was split
+# and `list(GET ... 1 ...)` failed with "index: 1 out of range".
 # ---------------------------------------------------------------------------
 if(CMAKE_VERSION VERSION_LESS 3.19)
     message(FATAL_ERROR "The Android link graph requires CMake 3.19+ (cmake_language(DEFER)).")
 endif()
 
-function(opentoonz_android_link_module_graph)
-    set(_edges
-        "tnzbase|tnzcore"
-        "tnzext|tnzcore;tnzbase"
-        "toonzlib|tnzcore;tnzbase;tnzext"
-        "image|tnzcore;tnzbase;toonzlib"
-    )
-    foreach(_edge IN LISTS _edges)
-        string(REPLACE "|" ";" _parts "${_edge}")
-        list(GET _parts 0 _target)
-        list(GET _parts 1 _deps)
-        if(NOT TARGET ${_target})
-            continue()
+function(opentoonz_android_link_siblings target)
+    if(NOT TARGET ${target})
+        message(STATUS "ToonzTab: link graph skipped, target not present: ${target}")
+        return()
+    endif()
+    foreach(dep IN LISTS ARGN)
+        if(NOT TARGET ${dep})
+            message(FATAL_ERROR "Android link graph: missing target ${dep} required by ${target}")
         endif()
-        foreach(_dep IN LISTS _deps)
-            if(TARGET ${_dep})
-                # Plain signature: matches how the module files call it.
-                target_link_libraries(${_target} ${_dep})
-            else()
-                message(FATAL_ERROR "Android link graph: missing target ${_dep} required by ${_target}")
-            endif()
-        endforeach()
+        # Plain signature: matches how the module files call it.
+        target_link_libraries(${target} ${dep})
     endforeach()
+endfunction()
+
+function(opentoonz_android_link_module_graph)
+    opentoonz_android_link_siblings(tnzbase tnzcore)
+    opentoonz_android_link_siblings(tnzext tnzcore tnzbase)
+    opentoonz_android_link_siblings(toonzlib tnzcore tnzbase tnzext)
+    opentoonz_android_link_siblings(image tnzcore tnzbase toonzlib)
 endfunction()
 
 cmake_language(DEFER CALL opentoonz_android_link_module_graph)
