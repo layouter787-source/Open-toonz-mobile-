@@ -172,3 +172,48 @@ set(GLEW_LIB "")
 set(OPEN_TOONZ_ANDROID_LEGACY_GL_READY TRUE)
 
 message(STATUS "ToonzTab: configured pinned GL4ES + Android GLU compatibility libraries")
+
+# ---------------------------------------------------------------------------
+# Inter-module link graph for Android.
+#
+# The per-module CMakeLists only link the sibling OpenToonz libraries inside
+# MSVC / Apple / UNIXLIKE branches. Android matches none of them, so e.g.
+# libtnzbase.so was linked without libtnzcore.so and failed with hundreds of
+# undefined references (TIStream, TFilePath, TRaster, ...). Android shared
+# libraries are linked with --no-undefined, so every dependency must be explicit.
+#
+# This is deferred to the end of the current directory so that all module
+# targets already exist. Only sibling OpenToonz targets are added here; third
+# party libraries (JPEG, LZ4, TIFF, PNG, SuperLU, OpenBLAS, MyPaint, ...) are
+# NOT provided by this block and still need real Android builds.
+# ---------------------------------------------------------------------------
+if(CMAKE_VERSION VERSION_LESS 3.19)
+    message(FATAL_ERROR "The Android link graph requires CMake 3.19+ (cmake_language(DEFER)).")
+endif()
+
+function(opentoonz_android_link_module_graph)
+    set(_edges
+        "tnzbase|tnzcore"
+        "tnzext|tnzcore;tnzbase"
+        "toonzlib|tnzcore;tnzbase;tnzext"
+        "image|tnzcore;tnzbase;toonzlib"
+    )
+    foreach(_edge IN LISTS _edges)
+        string(REPLACE "|" ";" _parts "${_edge}")
+        list(GET _parts 0 _target)
+        list(GET _parts 1 _deps)
+        if(NOT TARGET ${_target})
+            continue()
+        endif()
+        foreach(_dep IN LISTS _deps)
+            if(TARGET ${_dep})
+                # Plain signature: matches how the module files call it.
+                target_link_libraries(${_target} ${_dep})
+            else()
+                message(FATAL_ERROR "Android link graph: missing target ${_dep} required by ${_target}")
+            endif()
+        endforeach()
+    endforeach()
+endfunction()
+
+cmake_language(DEFER CALL opentoonz_android_link_module_graph)
