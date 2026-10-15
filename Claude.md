@@ -1827,3 +1827,26 @@ Commit da correção: https://github.com/layouter787-source/Open-toonz-mobile-/c
 
 ### Próxima ação obrigatória
 A alteração dispara uma nova execução do workflow. Consultar o run novo e corrigir o próximo erro fatal real a partir dos logs. Ainda não há APK compilado, empacotado ou testado num tablet; não declarar sucesso até isso acontecer.
+
+
+## 2026-10-15 — terceiro ciclo Android: GluCallback e clang-format
+
+### Erro fatal de compilação mais recente
+Run: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38709988029
+
+A configuração CMake e a compilação do target original começaram; o build parou em `toonz/sources/common/tvrender/ttessellator.cpp` com:
+```text
+ttessellator.cpp:111:51: error: use of undeclared identifier 'GluCallback'
+ttessellator.cpp:112:49: error: use of undeclared identifier 'GluCallback'
+ttessellator.cpp:114:53: error: use of undeclared identifier 'GluCallback'
+(repetido nas linhas 207, 208, 210, 305 e 425)
+```
+Causa identificada no código: o typedef `GluCallback` só estava definido para Windows e desktop macOS/Linux/BSD/Haiku; Android ficava fora da seleção. Correção aplicada em `ttessellator.cpp`, acrescentando `__ANDROID__` à condição que define o typedef usado pelo GLU. Commit: https://github.com/layouter787-source/Open-toonz-mobile-/commit/b1876223a3ac724dad16964bfafddb6f1a90fc98
+
+### Erro de formatação
+Run: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38709972276
+
+O clang-format apontou desalinhamento em declarações globais e macros em `android_glut_fonts.c` (linhas 57–74). Foram removidos espaços de alinhamento manual, deixando o formato para o estilo do repositório. Commit: https://github.com/layouter787-source/Open-toonz-mobile-/commit/ce70f48b491ca2f6026c6cfe783c1e8400b56c11
+
+### Próxima validação
+Os dois commits disparam novas execuções CI. Verificar os runs mais recentes antes de fazer mais alterações. A compilação Android ainda não terminou e nenhum APK foi gerado; os artefactos disponíveis são apenas logs de diagnóstico.
