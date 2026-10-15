@@ -47,3 +47,7 @@ Nenhum APK existe; a auditoria estatica aprovada nao e compilacao Android.
 
 - Clang-format: o segundo run encontrou desalinhamento em tenv.cpp:744 por AlignConsecutiveAssignments; corrigido no commit b486cf1. Verificar o novo run de formatação.
 - Workflow APK em execução: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708230263 . Ainda não há APK verificado.
+
+
+- clang-format também falhou no adaptador GLUT (run 38708376953, linhas 57–65); foram alinhadas as macros no commit d4cff2f. Verificação atual: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708542375 .
+- Workflow APK para o commit atual: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708542286 (queued). APK ainda não confirmado.
