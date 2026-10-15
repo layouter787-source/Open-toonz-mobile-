@@ -16,6 +16,13 @@
 #include <GLUT/glut.h>
 #endif
 
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+#endif
+
 //#include "tgeometry.h"
 #include "tcommon.h"
 

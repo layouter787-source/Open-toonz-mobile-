@@ -27,6 +27,13 @@
 #include <GL/glut.h>
 #endif
 
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glut.h>
+#endif
+
 // #include "tcurves.h"
 #include "traster.h"
 // #include "tfilepath.h"
@@ -110,6 +117,10 @@ inline void tglColor(const TPixel &p) { glColor4ub(p.r, p.g, p.b, p.m); }
 inline void tglColor(const TPixelD &p) { glColor4d(p.r, p.g, p.b, p.m); }
 
 //! retrieve the square of pixel size from current GL_MODELVIEW matrix
+// Initialize the Android legacy-OpenGL compatibility layer while a Qt GL
+// context is current. This is a no-op on desktop platforms.
+DVAPI void tglInitializeAndroidGLCompat();
+
 DVAPI double tglGetPixelSize2();
 
 //! retrieve the current viewport bounds in world coordinates

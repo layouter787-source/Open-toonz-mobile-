@@ -22,6 +22,7 @@
 
 // TnzCore includes
 #include "tconvert.h"
+#include "tgl.h"
 #include "tfiletype.h"
 #include "tsystem.h"
 #include "tundo.h"
@@ -627,6 +628,7 @@ void HexagonalColorWheel::showEvent(QShowEvent *) {
 //-----------------------------------------------------------------------------
 
 void HexagonalColorWheel::initializeGL() {
+  tglInitializeAndroidGLCompat();
   initializeOpenGLFunctions();
 
   // to be computed once through the software

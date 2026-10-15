@@ -1,40 +1,52 @@
 name: Android Tablet Port Audit
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
   push:
-    branches: [master]
+    branches: [master, main, 'mobile/**']
     paths:
       - 'toonz/sources/CMakeLists.txt'
-      - 'toonz/sources/toonz/main.cpp'
-      - 'toonz/sources/toonz/CMakeLists.txt'
-      - 'toonz/sources/toonz/android/AndroidManifest.xml'
-      - 'toonz/sources/toonz/penciltestpopup_qt.cpp'
-      - 'ci/android/**'
-      - 'toonz/sources/stopmotion/stopmotionserial.cpp'
-      - 'toonz/sources/stopmotion/stopmotion.cpp'
+      - 'toonz/sources/toonz/**'
+      - 'toonz/sources/toonz/toolbar.cpp'
+      - 'toonz/sources/common/tapptools/tenv.cpp'
+      - 'toonz/sources/common/tgl/tgl.cpp'
+      - 'toonz/sources/toonzlib/imagepainter.cpp'
+      - 'toonz/sources/stdfx/shaderinterface.cpp'
+      - 'toonz/sources/stdfx/shaderfx.cpp'
+      - 'toonz/sources/include/stdfx/**'
+      - 'toonz/sources/cmake/AndroidLegacyGL.cmake'
+      - 'toonz/sources/common/tgl/android_glut_fonts.c'
+      - 'toonz/sources/include/tgl.h'
+      - 'toonz/sources/common/tvrender/tofflinegl.cpp'
+      - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
+      - 'toonz/sources/include/qtofflinegl.h'
+      - 'toonz/sources/stdfx/shadingcontext.cpp'
       - 'toonz/sources/image/CMakeLists.txt'
       - 'toonz/sources/image/tiio.cpp'
+      - 'toonz/sources/stopmotion/**'
+      - 'ci/android/**'
       - 'doc/android_tablet_port_audit.md'
       - 'doc/android_tablet_dependency_matrix.md'
+      - 'doc/tablet_port_roadmap.md'
       - '.github/workflows/android-tablet-audit.yml'
   pull_request:
     paths:
       - 'toonz/sources/CMakeLists.txt'
-      - 'toonz/sources/toonz/main.cpp'
-      - 'toonz/sources/toonz/CMakeLists.txt'
-      - 'toonz/sources/toonz/android/AndroidManifest.xml'
-      - 'toonz/sources/toonz/penciltestpopup_qt.cpp'
-      - 'ci/android/**'
-      - 'toonz/sources/stopmotion/stopmotionserial.cpp'
-      - 'toonz/sources/stopmotion/stopmotion.cpp'
+      - 'toonz/sources/toonz/**'
+      - 'toonz/sources/toonz/toolbar.cpp'
+      - 'toonz/sources/common/tapptools/tenv.cpp'
+      - 'toonz/sources/common/tgl/tgl.cpp'
+      - 'toonz/sources/include/tgl.h'
+      - 'toonz/sources/common/tvrender/tofflinegl.cpp'
+      - 'toonz/sources/common/tvrender/qtofflinegl.cpp'
+      - 'toonz/sources/include/qtofflinegl.h'
+      - 'toonz/sources/stdfx/shadingcontext.cpp'
       - 'toonz/sources/image/CMakeLists.txt'
       - 'toonz/sources/image/tiio.cpp'
+      - 'toonz/sources/stopmotion/**'
+      - 'ci/android/**'
       - 'doc/android_tablet_port_audit.md'
       - 'doc/android_tablet_dependency_matrix.md'
+      - 'doc/tablet_port_roadmap.md'
       - '.github/workflows/android-tablet-audit.yml'
   workflow_dispatch:
 
@@ -43,115 +55,221 @@ permissions:
 
 jobs:
   source-audit:
-    name: Check Android port assumptions
+    name: Check native Android port assumptions
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify source files and report known blockers
+
+      - name: Validate native ToonzTab port assumptions
         shell: bash
         run: |
           set -euo pipefail
-          test -f toonz/sources/CMakeLists.txt
-          test -f toonz/sources/toonz/main.cpp
-          echo '--- CMake platform branches ---'
-          grep -nE 'BUILD_TARGET_ANDROID|BUILD_TARGET_WIN|BUILD_TARGET_APPLE|BUILD_TARGET_UNIX|CMAKE_SYSTEM_NAME' toonz/sources/CMakeLists.txt | head -n 35 || true
-          echo '--- Dedicated Android target detection and fail-fast guard ---'
-          grep -nE 'BUILD_ENV_ANDROID|Android NDK detected|Target system is ANDROID' toonz/sources/CMakeLists.txt
-          grep -q 'if(ANDROID)' toonz/sources/CMakeLists.txt
-          grep -q 'set(BUILD_TARGET_ANDROID ON)' toonz/sources/CMakeLists.txt
-          awk 'index($0, "if(ANDROID)") { android=1 } index($0, "set(BUILD_TARGET_UNIX ON)") && android { posix=1 } index($0, "elseif(WIN32)") { android=0 } END { exit !posix }' toonz/sources/CMakeLists.txt
-          grep -q 'set(BUILD_ENV_ANDROID ON)' toonz/sources/CMakeLists.txt
-          grep -q 'Android NDK detected' toonz/sources/CMakeLists.txt
-          grep -q 'if(NOT BUILD_TARGET_ANDROID)' toonz/sources/CMakeLists.txt
-          grep -q 'add_subdirectory(tcleanupper EXCLUDE_FROM_ALL)' toonz/sources/CMakeLists.txt
-          grep -q 'add_subdirectory(tcomposer EXCLUDE_FROM_ALL)' toonz/sources/CMakeLists.txt
-          grep -q 'add_subdirectory(tconverter EXCLUDE_FROM_ALL)' toonz/sources/CMakeLists.txt
-          grep -q 'add_subdirectory(toonzfarm EXCLUDE_FROM_ALL)' toonz/sources/CMakeLists.txt
-          grep -q 'if(LZODRIVER_FOUND AND NOT BUILD_TARGET_ANDROID)' toonz/sources/toonz/CMakeLists.txt
-          awk '/if\(NOT BUILD_TARGET_ANDROID\)/ { inside=1 } /list\(APPEND OPEN_TOONZ_QT_MODULES/ && inside { list=1 } /PrintSupport/ && list { found=1 } /endif\(\)/ && inside { inside=0 } END { exit !found }' toonz/sources/CMakeLists.txt
-          awk '/if\(NOT BUILD_TARGET_ANDROID\)/ { inside=1 } /list\(APPEND SOURCES print.cpp\)/ && inside { found=1 } /endif\(\)/ && inside { inside=0 } END { exit !found }' toonz/sources/toonz/CMakeLists.txt
-          grep -q 'QPdfWriter' toonz/sources/toonz/exportxsheetpdf.cpp
-          grep -q 'set(OPEN_TOONZ_QT_MODULES' toonz/sources/CMakeLists.txt
-          awk 'index($0, "if(NOT BUILD_TARGET_ANDROID)") { inside=1 } index($0, "list(APPEND OPEN_TOONZ_QT_MODULES") && inside { in_list=1 } index($0, "MultimediaWidgets") && in_list { multimedia_widgets=1 } index($0, "SerialPort") && in_list { serial_port=1 } index($0, "endif()") && inside { inside=0 } END { exit !(multimedia_widgets && serial_port) }' toonz/sources/CMakeLists.txt
-          grep -q '#ifdef Q_OS_ANDROID' toonz/sources/stopmotion/stopmotionserial.cpp
-          grep -q 'QStringList StopMotionSerial::getAvailableSerialPorts' toonz/sources/stopmotion/stopmotionserial.cpp
-          grep -q 'OPEN_TOONZ_ANDROID_OPENCV_ROOT' toonz/sources/CMakeLists.txt
-          grep -q 'list(APPEND OPEN_TOONZ_QT_MODULES AndroidExtras)' toonz/sources/CMakeLists.txt
-          grep -q 'Qt5::AndroidExtras' toonz/sources/toonz/CMakeLists.txt
-          grep -q 'QtAndroid::requestPermissionsSync' toonz/sources/toonz/penciltestpopup_qt.cpp
-          grep -q 'android.permission.CAMERA' toonz/sources/toonz/penciltestpopup_qt.cpp
-          grep -q 'OPENCV_ANDROID_SDK_ROOT' toonz/sources/CMakeLists.txt
-          grep -q 'cameracapturelevelcontrol_qt.cpp' toonz/sources/toonz/CMakeLists.txt
-          grep -q 'penciltestpopup_qt.cpp' toonz/sources/toonz/CMakeLists.txt
-          grep -q 'penciltestpopup_qt.h' toonz/sources/toonz/CMakeLists.txt
-          grep -q '#ifdef Q_OS_ANDROID' toonz/sources/stopmotion/stopmotion.cpp
-          awk 'index($0, "elseif(BUILD_TARGET_ANDROID)") { android=1 } index($0, "elseif(BUILD_TARGET_UNIX)") { if (android) unixbranch=1; android=0 } index($0, "mov/tiio_mov_proxy.cpp") && android { proxy=1 } END { exit !(unixbranch && !proxy) }' toonz/sources/image/CMakeLists.txt
-          awk '/if\(NOT BUILD_TARGET_ANDROID\)/ { inside=1 } /list\(APPEND SOURCES/ && inside { in_sources=1 } /mov\/tiio_mov_proxy.cpp/ && in_sources { mov=1 } /3gp\/tiio_3gp_proxy.cpp/ && in_sources { gp=1 } /endif\(\)/ && inside { inside=0; in_sources=0 } END { exit !(mov && gp) }' toonz/sources/image/CMakeLists.txt
-          awk '/#ifndef Q_OS_ANDROID/ { guarded=1 } /if \(IsQuickTimeInstalled\(\)\)/ && guarded { found=1 } /#endif/ && guarded { guarded=0 } END { exit !found }' toonz/sources/image/tiio.cpp
-          grep -q 'if (ThirdParty::checkFFmpeg())' toonz/sources/image/tiio.cpp
-          awk '/kis_tablet_support_win8.h/ { if (previous ~ /#ifdef _WIN32/) found=1 } { previous=$0 } END { exit !found }' toonz/sources/toonz/main.cpp
-          awk '/#ifndef Q_OS_ANDROID/ { guarded=1 } /QGLPixelBuffer/ && guarded { found=1 } /#endif/ && guarded { guarded=0 } END { exit !found }' toonz/sources/toonz/main.cpp
-          grep -q 'Android tablets use the full landscape activity' toonz/sources/toonz/main.cpp
-          grep -q '#if !defined(MACOSX) && !defined(Q_OS_ANDROID)' toonz/sources/toonz/main.cpp
-          echo 'Windows-only tablet support include is correctly guarded.'
-          grep -q 'if(BUILD_TARGET_WIN)' toonz/sources/toonz/CMakeLists.txt
-          awk 'index($0, "if(BUILD_TARGET_WIN)") { inside=1 } index($0, "list(APPEND HEADERS kis_tablet_support_win8.h)") && inside { header=1 } index($0, "list(APPEND SOURCES kis_tablet_support_win8.cpp)") && inside { source=1 } index($0, "endif()") && inside { inside=0 } END { exit !(header && source) }' toonz/sources/toonz/CMakeLists.txt
-          echo 'Windows-only tablet implementation is selected only for Windows.'
-          echo '--- Qt modules currently required ---'
-          grep -nA18 'find_package(Qt5 REQUIRED' toonz/sources/CMakeLists.txt || true
-          echo '--- Desktop/tablet-specific include in main.cpp ---'
-          grep -nE 'kis_tablet_support_win8|QGLPixelBuffer|QWindowsWindowFunctions' toonz/sources/toonz/main.cpp || true
-          echo '--- Android dependency blocker matrix ---'
-          test -f doc/android_tablet_dependency_matrix.md
-          test -f toonz/sources/toonz/android/AndroidManifest.xml
-          grep -q 'android:screenOrientation="landscape"' toonz/sources/toonz/android/AndroidManifest.xml
-          grep -q 'android.permission.CAMERA' toonz/sources/toonz/android/AndroidManifest.xml
-          grep -q 'android.hardware.camera' toonz/sources/toonz/android/AndroidManifest.xml
           bash -n ci/android/fetch-opencv-android-sdk.sh
-          grep -q 'e8cfaf2e51f2e2127a6ede91718d1ef7587f8b6e62db922816e7c33a1f1116a7' ci/android/fetch-opencv-android-sdk.sh
-          grep -q 'OpenCVConfig.cmake' ci/android/fetch-opencv-android-sdk.sh
-          grep -q 'android:smallScreens="false"' toonz/sources/toonz/android/AndroidManifest.xml
-          grep -q 'android:name="android.app.lib_name"' toonz/sources/toonz/android/AndroidManifest.xml
-          grep -q '%%INSERT_APP_LIB_NAME%%' toonz/sources/toonz/android/AndroidManifest.xml
-          grep -q 'ANDROID_PACKAGE_SOURCE_DIR' toonz/sources/toonz/CMakeLists.txt
-          grep -q 'elseif(BUILD_TARGET_ANDROID)' toonz/sources/toonz/CMakeLists.txt
-          grep -q 'LayFrame Studio' toonz/sources/toonz/android/AndroidManifest.xml
-          grep -q 'package="io.github.layframe.studio"' toonz/sources/toonz/android/AndroidManifest.xml
-          echo 'Qt Android packaging template is tablet/landscape configured and retains androiddeployqt placeholders.'
-          python3 - <<'PY'
-          import xml.etree.ElementTree as ET
-          path = "toonz/sources/toonz/android/AndroidManifest.xml"
-          root = ET.parse(path).getroot()
-          android = "{http://schemas.android.com/apk/res/android}"
-          assert root.attrib["package"] == "io.github.layframe.studio"
-          application = root.find("application")
-          assert application is not None
-          activity = application.find("activity")
-          assert activity is not None
-          assert activity.attrib[android + "screenOrientation"] == "landscape"
-          assert activity.attrib[android + "exported"] == "true"
-          print("AndroidManifest.xml is well-formed and the tablet package settings are present.")
-          PY
-          echo '--- Android fail-fast guard placement ---'
+
           python3 - <<'PY'
           from pathlib import Path
-          source = Path("toonz/sources/CMakeLists.txt").read_text()
-          anchor = source.find("# The full OpenToonz app still requests desktop-only Qt modules")
-          guard = source.find("if(BUILD_ENV_ANDROID)", anchor)
-          guard_end = source.find("endif()", guard)
-          qt = source.find("find_package(Qt5 REQUIRED")
-          opencv = source.find("find_package(OpenCV")
-          message = source.find("Android NDK detected, but the full OpenToonz Android tablet target is not ready")
-          assert guard >= 0 and guard_end > guard, "Android guard is missing or malformed"
-          assert message > guard and message < guard_end, "guard message is outside the Android guard"
-          assert qt > guard_end, "Qt dependency discovery runs before the Android guard"
-          assert opencv > guard_end, "OpenCV discovery runs before the Android guard"
-          print("The Android guard is present before desktop Qt/OpenCV dependency discovery.")
+          import xml.etree.ElementTree as ET
+
+          required = [
+              "toonz/sources/CMakeLists.txt",
+              "toonz/sources/toonz/CMakeLists.txt",
+              "toonz/sources/toonz/main.cpp",
+              "toonz/sources/common/tapptools/tenv.cpp",
+              "toonz/sources/common/tgl/tgl.cpp",
+              "toonz/sources/common/tgl/android_glut_fonts.c",
+              "toonz/sources/cmake/AndroidLegacyGL.cmake",
+              "toonz/sources/include/stdfx/shadingcontext.h",
+              "toonz/sources/include/stdfx/shaderinterface.h",
+              "toonz/sources/stdfx/shaderfx.cpp",
+              "toonz/sources/stdfx/shaderinterface.cpp",
+              "toonz/sources/toonzlib/imagepainter.cpp",
+              "toonz/sources/include/tgl.h",
+              "toonz/sources/toonzlib/toonzfolders.cpp",
+              "toonz/sources/toonz/mainwindow.cpp",
+              "toonz/sources/common/tvrender/tofflinegl.cpp",
+              "toonz/sources/common/tvrender/qtofflinegl.cpp",
+              "toonz/sources/include/qtofflinegl.h",
+              "toonz/sources/stdfx/shadingcontext.cpp",
+              "toonz/sources/toonz/android/AndroidManifest.xml",
+              "doc/android_tablet_port_audit.md",
+              "doc/android_tablet_dependency_matrix.md",
+              "doc/tablet_port_roadmap.md",
+              "ci/android/fetch-opencv-android-sdk.sh",
+          ]
+          for name in required:
+              assert Path(name).is_file(), f"Missing required port file: {name}"
+
+          top = Path("toonz/sources/CMakeLists.txt").read_text()
+          app_cmake = Path("toonz/sources/toonz/CMakeLists.txt").read_text()
+          main = Path("toonz/sources/toonz/main.cpp").read_text()
+          tenv = Path("toonz/sources/common/tapptools/tenv.cpp").read_text()
+          folders = Path("toonz/sources/toonzlib/toonzfolders.cpp").read_text()
+          window = Path("toonz/sources/toonz/mainwindow.cpp").read_text()
+          offline_h = Path("toonz/sources/include/qtofflinegl.h").read_text()
+          offline_cpp = Path("toonz/sources/common/tvrender/qtofflinegl.cpp").read_text()
+          offlineselect = Path("toonz/sources/common/tvrender/tofflinegl.cpp").read_text()
+          shading = Path("toonz/sources/stdfx/shadingcontext.cpp").read_text()
+          toolbar = Path("toonz/sources/toonz/toolbar.cpp").read_text()
+          tgl_cpp = Path("toonz/sources/common/tgl/tgl.cpp").read_text()
+          tgl_h = Path("toonz/sources/include/tgl.h").read_text()
+          gl_compat = Path("toonz/sources/cmake/AndroidLegacyGL.cmake").read_text()
+          glut_fonts = Path("toonz/sources/common/tgl/android_glut_fonts.c").read_text()
+          shader_header = Path("toonz/sources/include/stdfx/shaderinterface.h").read_text()
+          shading_header = Path("toonz/sources/include/stdfx/shadingcontext.h").read_text()
+          shaderfx = Path("toonz/sources/stdfx/shaderfx.cpp").read_text()
+          shaderinterface = Path("toonz/sources/stdfx/shaderinterface.cpp").read_text()
+          imagepainter = Path("toonz/sources/toonzlib/imagepainter.cpp").read_text()
+          matrix = Path("doc/android_tablet_dependency_matrix.md").read_text()
+          audit = Path("doc/android_tablet_port_audit.md").read_text()
+          roadmap = Path("doc/tablet_port_roadmap.md").read_text()
+
+          # Platform discovery must distinguish Android from generic desktop Unix.
+          assert "if(ANDROID)" in top
+          assert "set(BUILD_TARGET_ANDROID ON)" in top
+          assert "set(BUILD_ENV_ANDROID ON)" in top
+
+          # Keep the fail-fast guard until the complete dependency/link path is ready.
+          anchor = top.find("# Keep the safe default fail-fast behavior")
+          guard = top.find("if(BUILD_ENV_ANDROID)", anchor)
+          guard_end = top.find("endif()", guard)
+          qt_discovery = top.find("find_package(Qt5 REQUIRED")
+          opencv_discovery = top.find("find_package(OpenCV")
+          guard_message = top.find(
+              "Android NDK detected, but the full OpenToonz Android tablet target is not ready"
+          )
+          assert anchor >= 0 and guard > anchor and guard_end > guard
+          assert guard < guard_message < guard_end
+          assert guard_end < qt_discovery and guard_end < opencv_discovery
+          assert "OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD" in top
+          assert 'include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AndroidLegacyGL.cmake")' in top
+          print("PASS: Android remains fail-fast by default; an explicit experimental switch enables the original native graphics path.")
+
+          # Android must resolve OpenCV only from an ABI-matched Android SDK,
+          # never from a host desktop installation.
+          opencv_block_start = top.find("if(PLATFORM EQUAL 64)")
+          opencv_block_end = top.find("get_target_property(QtCore_location", opencv_block_start)
+          opencv_block = top[opencv_block_start:opencv_block_end]
+          assert "if(BUILD_TARGET_ANDROID)" in opencv_block
+          assert "find_package(OpenCV 4.1 REQUIRED CONFIG)" in opencv_block
+          assert "OPEN_TOONZ_ANDROID_OPENCV_ROOT" in opencv_block
+          assert "if(NOT OpenCV_FOUND OR NOT OpenCV_LIBS)" in opencv_block
+          print("PASS: Android OpenCV resolution requires the ABI-specific SDK package.")
+
+          # The original OpenToonz executable target remains the Android target.
+          assert "elseif(BUILD_TARGET_ANDROID)" in app_cmake
+          assert "add_executable(OpenToonz" in app_cmake
+          assert "ANDROID_PACKAGE_SOURCE_DIR" in app_cmake
+          assert "Qt5::AndroidExtras" in app_cmake
+          android_link = app_cmake.find("elseif(BUILD_ENV_ANDROID)")
+          android_link_end = app_cmake.find("elseif(BUILD_ENV_UNIXLIKE)", android_link)
+          assert android_link >= 0 and android_link_end > android_link
+          android_link_block = app_cmake[android_link:android_link_end]
+          assert "target_link_libraries(OpenToonz" in android_link_block
+          assert "Qt5::AndroidExtras" in android_link_block
+          assert "${GLUT_LIB}" in android_link_block and "${GLU_LIB}" in android_link_block and "${GL_LIB}" in android_link_block
+          assert "tnzcore tnzbase toonzlib colorfx tnzext image sound toonzqt tnztools tnzstdfx tfarm" in android_link_block
+          assert "This is only a first-pass link list" in matrix
+          assert 'set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android-package")' in app_cmake
+          assert 'file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/android/"' in app_cmake
+          assert 'file(COPY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/"' in app_cmake
+          assert "OPEN_TOONZ_STUFF_ASSETS" in app_cmake
+          assert "stuff-manifest.txt" in app_cmake
+          print("PASS: Android packaging targets the original C++/Qt application and stages its asset tree.")
+
+          # Ensure only the Android startup path requests GLES and skips desktop GLUT.
+          graphics = main.find("Initializing graphics...")
+          android = main.find("#ifdef Q_OS_ANDROID", graphics)
+          desktop = main.find("#else", android)
+          gles = main.find("QSurfaceFormat::OpenGLES", android)
+          glut = main.find("glutInit(&argc, argv);", graphics)
+          assert graphics >= 0 and android > graphics and desktop > android
+          assert android < gles < desktop
+          assert glut > desktop
+          assert 'QCoreApplication::setApplicationName("ToonzTab")' in main
+          assert 'applicationFullName = QStringLiteral("ToonzTab")' in window
+          qgl_include = window.find("#include <QGLPixelBuffer>")
+          qgl_guard = window.rfind("#ifndef Q_OS_ANDROID", 0, qgl_include)
+          qgl_guard_end = window.find("#endif", qgl_include)
+          assert qgl_include >= 0 and qgl_guard >= 0 and qgl_guard_end > qgl_include
+          assert "Keep this desktop-only feature unavailable until it has a GLES renderer." in window
+          assert "#ifdef Q_OS_ANDROID" in window
+          assert 'std::make_shared<QtOfflineGL>(dim, shared)' in offlineselect
+          assert 'QGLPixelBuffer' in offline_h and 'glBegin(GL_QUAD_STRIP)' in offlineselect
+          assert '#ifndef Q_OS_ANDROID' in offline_h
+          assert 'format.setRenderableType(QSurfaceFormat::OpenGLES)' in offline_cpp
+          assert 'format.setVersion(2, 0)' in offline_cpp
+          assert 'defined(Q_OS_ANDROID)' in offlineselect
+          assert '#include <GL/glew.h>' in shading
+          assert "tglInitializeAndroidGLCompat" in tgl_h
+          assert "set_getprocaddress(toonzGL4ESGetProcAddress)" in tgl_cpp
+          assert "set_getmainfbsize" in tgl_cpp and "initialize_gl4es()" in tgl_cpp
+          assert "eglGetCurrentDisplay()" in tgl_cpp and "eglGetCurrentSurface(EGL_DRAW)" in tgl_cpp
+          assert "set(GL_LIB GL)" in gl_compat
+          assert "set(GLU_LIB ToonzAndroidGLU)" in gl_compat
+          assert "set(GLUT_LIB ToonzAndroidGLUTFonts)" in gl_compat
+          assert "initialize_gl4es()" in tgl_cpp
+          assert "void FGAPIENTRY glutStrokeCharacter" in glut_fonts
+          assert "void FGAPIENTRY glutBitmapCharacter" in glut_fonts
+          for source in (shader_header, shading_header, shaderfx, shaderinterface, imagepainter):
+              assert "#if defined(Q_OS_ANDROID) || defined(__ANDROID__)" in source, "Android GL header guard missing"
+          assert "GL_GLEXT_PROTOTYPES" in shader_header and "GL_GLEXT_PROTOTYPES" in imagepainter
+          # The shader context must actually apply its Android GLES format to
+          # both QOffscreenSurface and QOpenGLContext before creating them.
+          assert "const QSurfaceFormat format = Imp::format();" in shading
+          assert "m_imp->m_surface->setFormat(format);" in shading
+          assert "m_imp->m_surface->create();" in shading
+          assert shading.index("m_imp->m_surface->setFormat(format);") < shading.index("m_imp->m_surface->create();")
+          assert "m_imp->m_context->setFormat(format);" in shading
+          assert "m_imp->m_context->setFormat(Imp::format());" in shading
+          for path in ("toonz/sources/toonz/sceneviewer.cpp", "toonz/sources/toonz/imageviewer.cpp",
+                       "toonz/sources/toonzqt/planeviewer.cpp", "toonz/sources/toonzqt/styleeditor.cpp",
+                       "toonz/sources/toonz/preferencespopup.cpp"):
+              assert "tglInitializeAndroidGLCompat();" in Path(path).read_text(), path
+          assert 'glBegin(GL_QUADS)' in shading
+          assert 'QGLPixelBuffer' in offline_cpp
+          assert '#ifdef Q_OS_ANDROID' in toolbar
+          assert 'setIconSize(QSize(28, 28))' in toolbar
+          assert 'setMinimumSize(48, 48)' in toolbar
+          assert "QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)" in tenv
+          assert "QStandardPaths::AppConfigLocation" in tenv
+          assert "systemVarDirectory" in tenv
+          assert 'assets:/stuff-manifest.txt' in tenv
+          assert 'assets:/stuff/' in tenv
+          assert "copyAndroidStuffAssets" in tenv
+          assert "TEnv::getStuffDir() + TEnv::getSystemPathMap().at(\"PROJECTS\")" in folders
+          assert "app-private storage" in folders
+          print("PASS: Android startup, private runtime data/config and project storage are selected independently of desktop paths.")
+
+          # Validate the actual Qt Android deployment template.
+          manifest_path = "toonz/sources/toonz/android/AndroidManifest.xml"
+          root = ET.parse(manifest_path).getroot()
+          android_ns = "{http://schemas.android.com/apk/res/android}"
+          assert root.attrib.get("package") == "com.toonz.tab"
+          app = root.find("application")
+          assert app is not None and app.attrib.get(android_ns + "label") == "ToonzTab"
+          activity = app.find("activity")
+          assert activity is not None
+          assert activity.attrib.get(android_ns + "screenOrientation") == "landscape"
+          assert activity.attrib.get(android_ns + "exported") == "true"
+          screens = root.find("supports-screens")
+          assert screens is not None, "Tablet-only screen policy is missing"
+          assert screens.attrib.get(android_ns + "smallScreens") == "false"
+          assert screens.attrib.get(android_ns + "normalScreens") == "false"
+          assert screens.attrib.get(android_ns + "largeScreens") == "true"
+          assert screens.attrib.get(android_ns + "xlargeScreens") == "true"
+          features = {node.attrib.get(android_ns + "name"): node.attrib.get(android_ns + "required")
+                      for node in root.findall("uses-feature")}
+          assert features.get("android.hardware.touchscreen") == "true", "Drawing app must require touchscreen hardware"
+          assert "%%INSERT_APP_LIB_NAME%%" in Path(manifest_path).read_text()
+          print("PASS: ToonzTab manifest is landscape-only, excludes small/normal screens, requires touchscreen hardware, and preserves Qt deployment placeholders.")
+
+          # Documents must say what remains blocked instead of claiming an APK.
+          assert "Main application graphics startup" in matrix
+          assert "has not been compiled or tested" in matrix
+          assert "not finished" in roadmap
+          assert "do **not** mean that OpenToonz builds or runs on Android yet" in audit
+          assert not Path("mobile-android/app/src/main/java/org/opentoonz/mobile/MainActivity.kt").exists()
+          assert not Path(".github/workflows/android-mobile.yml").exists()
+          print("PASS: Audit records the remaining native blockers; the standalone Kotlin replacement and its APK workflow are absent.")
+          print("SOURCE AUDIT PASSED. This does not build or certify an Android APK.")
           PY
-          grep -q '| Qt Serial Port |' doc/android_tablet_dependency_matrix.md
-          grep -q '| Qt Multimedia Widgets |' doc/android_tablet_dependency_matrix.md
-          grep -q 'Android graphics and native-library link branches' doc/android_tablet_dependency_matrix.md
-          echo 'Known unsupported Qt modules and Android link blockers are documented.'
-          echo '--- Audit document ---'
-          test -f doc/android_tablet_port_audit.md
-          echo 'Audit checks passed. This is a source audit only; it does not build an Android APK.'

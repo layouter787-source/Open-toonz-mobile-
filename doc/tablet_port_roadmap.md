@@ -1,46 +1,49 @@
-# LayFrame Studio — Android Tablet Port Roadmap
+# ToonzTab — Port of the original OpenToonz application to Android tablets
 
-## Product boundary
+## Non-negotiable project direction
 
-Build a tablet-only Android animation app from this repository's OpenToonz C++ codebase. The UI should be landscape-first and designed for touch and stylus. Phone layout is not a target.
+This project must adapt the existing OpenToonz application and its C++/Qt source tree for Android tablets. It must not replace OpenToonz with a newly written drawing app, a Kotlin-only editor, or a UI mockup. The existing upstream source tree is the product foundation and must remain in the repository.
 
-## Important technical reality
+The Android adaptation should keep as much of the original animation engine and workflows as the platform permits: drawing tools and levels, scene model, Xsheet/timeline, onion skin, effects, compositing, rendering, and native project formats. Each feature must be verified before claiming compatibility.
 
-OpenToonz is a desktop application with a large dependency graph. Qt supports Android applications, but that does not automatically make every OpenToonz module, plugin, codec, file dialog, or third-party library Android-compatible. A genuine port needs staged dependency and platform work; simply renaming the executable or changing the package metadata is insufficient.
+## Findings in the current branch
 
-## Stages
+- The original native application entry point is in `toonz/sources/toonz/main.cpp`.
+- The native build configuration is in `toonz/sources/CMakeLists.txt` and the application target configuration is in `toonz/sources/toonz/CMakeLists.txt`.
+- The existing CMake configuration detects the Android NDK, but currently stops with a fatal error before building the full application. That guard exists because the native dependency/link path is incomplete.
+- The earlier separate `mobile-android/` Kotlin/Compose scaffold has been removed from this branch and is not the product path. All deliverable implementation must stay in the original C++/Qt application and its Android package.
+- No working Android build of the complete OpenToonz engine has been verified yet.
 
-1. **Audit the source and build graph**
-   - Identify the main Qt application target, Qt modules, platform-specific APIs, third-party dependencies, plugins, codecs, and desktop-only file handling.
-   - Mark each dependency as Android-ready, replaceable, or requiring a port.
-   - Keep upstream license notices and record all local changes.
+## Porting work must happen in the original native codebase
 
-2. **Establish an Android/Qt toolchain**
-   - Select a Qt version with Android support, Android SDK/NDK, JDK, and matching ABI.
-   - Create a minimal Android Qt application build first, then add compatible OpenToonz modules incrementally.
-   - Do not publish a fake or placeholder APK as if it contained the animation engine.
+### 1. Build and dependency audit
 
-3. **Tablet application shell**
-   - Set landscape orientation and enforce a minimum usable workspace size.
-   - Create a tablet UI with a central canvas, left tool strip, right properties/layers panel, and a bottom timeline/Xsheet.
-   - Use larger touch targets, stylus pressure where supported, palm/touch separation where available, and keyboard shortcuts for tablets with keyboards.
-   - Avoid copying desktop menu density directly onto a touch interface.
+Start from `toonz/sources/CMakeLists.txt`, `toonz/sources/toonz/CMakeLists.txt`, and the original target's dependency graph. Inventory every Qt module, third-party library, codec, plugin, desktop OS API, file dialog, filesystem assumption, and OpenGL/GLEW path. Mark each dependency as Android-compatible, replaceable, or requiring a port. Keep upstream files and license notices.
 
-4. **Port core animation workflows**
-   - Open/save projects through Android-compatible document access.
-   - Drawing levels, brush input, timeline/Xsheet, onion skin, playback, camera, and render/export.
-   - Replace unsupported desktop dialogs, filesystem assumptions, and platform APIs.
-   - Keep rendering and editing responsive under tablet memory constraints.
+### 2. Native Qt/NDK application target
 
-5. **Continuous integration and validation**
-   - Build only after the Qt Android toolchain and compatible dependency set are pinned.
-   - Run configure/build checks and archive APK artifacts from successful builds.
-   - Test install, startup, touch/stylus drawing, saving/reopening, playback, and export on a physical tablet.
+Use a supported Qt-for-Android toolchain, Android SDK/NDK, CMake, and a tablet ABI. Adapt the existing native `OpenToonz` application target and startup path. Do not simply remove the Android guard and hope the desktop target compiles: first resolve the dependency and source-selection blockers that the guard documents.
 
-## Definition of done
+Before enabling a native Android build, port the renderer as a coherent unit: the offline GL factory in `tofflinegl.cpp`, the `QtOfflineGL` FBO context in `qtofflinegl.cpp`, the legacy PBuffer declarations, and the GLEW/fixed-function shader path in `stdfx/shadingcontext.cpp`. OpenToonz drawing code also uses `glBegin/glVertex`, so an OpenGL ES context alone is not enough. Preserve full raster/vector drawing and shader behavior rather than stubbing them out.
 
-The port is not complete until a generated APK installs and launches on a real Android tablet, accepts touch/stylus input, edits and saves an animation project, plays frames, and exports a render. A successful desktop build or a UI mockup does not satisfy this requirement.
+### 3. Android platform adaptation
 
-## Current status
+Replace desktop-only windowing, file access, dialogs, input and platform integrations with Android-compatible equivalents. Keep the existing scene and animation systems wherever possible. Use Android document access for opening and saving projects. Make graphics/rendering code work with the Android-supported graphics stack.
 
-This document records the intended port. It does not claim that the stages above have already been implemented.
+The original repository `stuff/` tree is now prepared for Android packaging as read-only assets, with first-run seeding into app-private storage in `TEnv`. This preserves the legacy engine's filesystem expectations. It still requires validation after the native CMake guard is resolved and a real APK can be built.
+
+### 4. Tablet interaction design
+
+Adapt the original editor to landscape tablets, with touch-sized tools, stylus input, a large canvas, timeline/Xsheet, levels and properties panels. This is a redesign of the original application's UI and interaction—not a separate replacement editor. Preserve keyboard and shortcut workflows where tablet keyboards are available.
+
+### 5. Validation
+
+Build the actual native application, package it as an Android APK, install it on a physical tablet, and verify startup, stylus drawing, editing, saving/reopening native projects, playback, effects and rendering/export. Only features tested end-to-end may be described as working.
+
+## Acceptance criteria
+
+The project is not considered an OpenToonz Android port merely because an APK or a Kotlin drawing canvas exists. The acceptance target is the original OpenToonz application and engine adapted to run on Android tablets, with the new app identity and tablet-appropriate interaction.
+
+## Honest status
+
+The original OpenToonz source tree is present. The complete native Android port is not finished, and no successful APK containing the full engine has been verified. The next implementation work must continue modifying and building the native C++/Qt application and its dependencies. Do not recreate a standalone Kotlin replacement editor.

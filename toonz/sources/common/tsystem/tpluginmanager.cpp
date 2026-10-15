@@ -20,7 +20,7 @@
 #endif
 #include <stdio.h>
 #include <unistd.h>
-#if !defined(HAIKU) && (!defined(FREEBSD) || __FreeBSD_version < 1300040)
+#if !defined(HAIKU) && !defined(__ANDROID__) && (!defined(FREEBSD) || __FreeBSD_version < 1300040)
 #include <sys/dir.h>
 #endif
 #include <sys/param.h>  // for getfsstat
@@ -176,7 +176,7 @@ void TPluginManager::loadPlugin(const TFilePath &fp) {
 void TPluginManager::loadPlugins(const TFilePath &dir) {
 #if defined(_WIN32)
   const std::string extension = "dll";
-#elif defined(LINUX) || defined(FREEBSD) || defined(__sgi) || defined(HAIKU)
+#elif defined(LINUX) || defined(FREEBSD) || defined(__sgi) || defined(HAIKU) || defined(__ANDROID__)
   const std::string extension = "so";
 #elif defined(MACOSX)
   const std::string extension = "dylib";

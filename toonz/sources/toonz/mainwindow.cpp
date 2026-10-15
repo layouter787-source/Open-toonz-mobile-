@@ -54,7 +54,10 @@
 #include <QStackedWidget>
 #include <QSettings>
 #include <QApplication>
+#ifndef Q_OS_ANDROID
+// Legacy desktop-only offscreen buffers are unavailable on the Android GLES path.
 #include <QGLPixelBuffer>
+#endif
 #include <QDebug>
 #include <QDesktopServices>
 #include <QButtonGroup>
@@ -594,8 +597,13 @@ void MainWindow::changeWindowTitle() {
   /*--- レイアウトファイル名を頭に表示させる ---*/
   if (!m_layoutName.isEmpty()) sceneName.prepend(m_layoutName + " : ");
 
-  QString name = sceneName + " [" + projectName + "] : " +
-                 QString::fromStdString(TEnv::getApplicationFullName());
+  QString applicationFullName =
+      QString::fromStdString(TEnv::getApplicationFullName());
+#ifdef Q_OS_ANDROID
+  applicationFullName = QStringLiteral("ToonzTab");
+#endif
+  QString name =
+      sceneName + " [" + projectName + "] : " + applicationFullName;
 
   if (ShowBuildDateInTitle) {
     name += " (built " __DATE__ " " __TIME__ ")";
@@ -1715,7 +1723,12 @@ void MainWindow::onMenuCheckboxChanged() {
   else if (cm->getAction(MI_FieldGuide) == action)
     FieldGuideToggleAction = isChecked;
   else if (cm->getAction(MI_RasterizePli) == action) {
+#ifdef Q_OS_ANDROID
+    // The legacy rasterize-PLI preview depends on desktop GL pixel buffers.
+    isChecked = 0;
+#else
     if (!QGLPixelBuffer::hasOpenGLPbuffers()) isChecked = 0;
+#endif
     RasterizePliToggleAction = isChecked;
   } else if (cm->getAction(MI_SafeArea) == action)
     SafeAreaToggleAction = isChecked;
@@ -2721,12 +2734,17 @@ void MainWindow::defineActions() {
   createToggle(MI_VectorGuidedDrawing, QT_TR_NOOP("Vector Guided Drawing"), "",
                Preferences::instance()->isGuidedDrawingEnabled(),
                MenuViewCommandType, "view_guided_drawing");
+#ifdef Q_OS_ANDROID
+  // Keep this desktop-only feature unavailable until it has a GLES renderer.
+  RasterizePliToggleAction = 0;
+#else
   if (QGLPixelBuffer::hasOpenGLPbuffers())
     createToggle(MI_RasterizePli, QT_TR_NOOP("&Visualize Vector As Raster"), "",
                  RasterizePliToggleAction ? 1 : 0, MenuViewCommandType,
                  "view_vector_as_raster");
   else
     RasterizePliToggleAction = 0;
+#endif
 
   // Menu - Windows
 

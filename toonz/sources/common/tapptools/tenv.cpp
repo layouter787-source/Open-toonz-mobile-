@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QTextStream>
 
 #include <iostream>
 
@@ -83,7 +84,9 @@ public:
 #ifdef MACOSX
     return QString::fromStdString(getApplicationFileName()) + QString(".app") +
            QString("/Contents/Resources/SystemVar.ini");
-#elif defined(HAIKU)
+#elif defined(Q_OS_ANDROID) || defined(HAIKU)
+    // Keep settings inside the app sandbox; do not reuse desktop OpenToonz
+    // configuration paths on the ToonzTab Android package.
     return QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) +
            "/SystemVar.ini";
 #else /* Generic Unix */
@@ -628,6 +631,7 @@ TFilePath TEnv::getConfigDir() {
 #if !defined(_WIN32) && !defined(MACOSX)
 namespace {
 
+#ifndef Q_OS_ANDROID
 // TSystem::copyDir() ignores mkdir/copy failures, so recurse and report here.
 bool copyDirOrFail(const QString &dst, const QString &src) {
   if (!QDir().mkpath(dst)) return false;
@@ -651,36 +655,109 @@ TFilePath getInstalledStuffDir() {
   TFilePath exeDir(QCoreApplication::applicationDirPath().toStdWString());
   return exeDir.getParentDir() + "share" + "opentoonz" + "stuff";
 }
+#endif
 
-// Derived from the ini TEnv reads; not every platform uses ~/.config.
+// Derived from the ini TEnv reads; Android keeps this data in the app sandbox.
 TFilePath getUserStuffDir(EnvGlobals *eg) {
+#ifdef Q_OS_ANDROID
+  const QString appDataPath =
+      QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  return TFilePath(QDir(appDataPath).filePath("stuff").toStdWString());
+#else
   TFilePath systemVarFile(eg->getSystemVarFile().toStdWString());
   return systemVarFile.getParentDir() + "stuff";
+#endif
 }
 
-bool seedStuffTreeIfMissing(const TFilePath &userStuffDir) {
-  if (TFileStatus(userStuffDir).doesExist()) return true;
-
-  TFilePath installedStuffDir = getInstalledStuffDir();
-  if (!TFileStatus(installedStuffDir).isDirectory())
-    return false;  // build tree: nothing to copy from
-
-  const QString userStuffDirStr = userStuffDir.getQString();
-  const QString stagingDirStr   = userStuffDirStr + ".incomplete";
-
-  // Rename into place only after a complete copy, so a failed one leaves
-  // nothing a later run would mistake for finished stuff.
-  QDir(stagingDirStr).removeRecursively();  // leftovers from a failed attempt
-  if (!copyDirOrFail(stagingDirStr, installedStuffDir.getQString()) ||
-      !QDir().rename(stagingDirStr, userStuffDirStr)) {
-    QDir(stagingDirStr).removeRecursively();
-    std::cerr << "Failed to initialize " << userStuffDirStr.toStdString()
-              << " from " << installedStuffDir.getQString().toStdString()
+#ifdef Q_OS_ANDROID
+// Android package assets are read-only. Copy them to private app storage so
+// OpenToonz can continue using its existing filesystem-based stuff directory.
+bool copyAndroidStuffAssets(const QString &destination) {
+  QFile manifest(QStringLiteral("assets:/stuff-manifest.txt"));
+  if (!manifest.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    std::cerr << "Could not open the packaged ToonzTab stuff manifest."
               << std::endl;
     return false;
   }
 
-  // writable dirs the app expects, possibly absent from the packaged tree
+  QTextStream entries(&manifest);
+  entries.setCodec("UTF-8");
+  while (!entries.atEnd()) {
+    const QString manifestLine = entries.readLine();
+    if (manifestLine.isEmpty()) continue;
+    const QString relativePath =
+        QDir::cleanPath(QDir::fromNativeSeparators(manifestLine));
+    if (relativePath == "." || relativePath == ".." ||
+        relativePath.startsWith("../") || QDir::isAbsolutePath(relativePath)) {
+      std::cerr << "Invalid path in ToonzTab stuff manifest: "
+                << relativePath.toStdString() << std::endl;
+      return false;
+    }
+
+    const QString sourcePath = QStringLiteral("assets:/stuff/") + relativePath;
+    const QString targetPath = QDir(destination).filePath(relativePath);
+    if (!QDir().mkpath(QFileInfo(targetPath).absolutePath())) return false;
+
+    QFile source(sourcePath);
+    if (!source.open(QIODevice::ReadOnly)) {
+      std::cerr << "Could not read packaged ToonzTab asset: "
+                << sourcePath.toStdString() << std::endl;
+      return false;
+    }
+
+    QFile target(targetPath);
+    if (!target.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+      std::cerr << "Could not write ToonzTab data file: "
+                << targetPath.toStdString() << std::endl;
+      return false;
+    }
+
+    while (!source.atEnd()) {
+      const QByteArray chunk = source.read(256 * 1024);
+      if (chunk.isEmpty() && source.error() != QFileDevice::NoError) {
+        return false;
+      }
+      if (!chunk.isEmpty() && target.write(chunk) != chunk.size()) {
+        return false;
+      }
+    }
+    if (!target.flush()) return false;
+  }
+  return true;
+}
+#endif
+
+bool seedStuffTreeIfMissing(const TFilePath &userStuffDir) {
+  if (TFileStatus(userStuffDir).doesExist()) return true;
+
+  const QString userStuffDirStr = userStuffDir.getQString();
+  const QString stagingDirStr   = userStuffDirStr + ".incomplete";
+  QString sourceLabel;
+  bool copied = false;
+
+  // Rename into place only after a complete copy, so a failed attempt never
+  // leaves a partial tree that a later launch mistakes for initialized data.
+  QDir(stagingDirStr).removeRecursively();
+
+#ifdef Q_OS_ANDROID
+  sourceLabel = QStringLiteral("assets:/stuff");
+  copied      = copyAndroidStuffAssets(stagingDirStr);
+#else
+  const TFilePath installedStuffDir = getInstalledStuffDir();
+  sourceLabel = installedStuffDir.getQString();
+  if (!TFileStatus(installedStuffDir).isDirectory())
+    return false;  // build tree: nothing to copy from
+  copied = copyDirOrFail(stagingDirStr, installedStuffDir.getQString());
+#endif
+
+  if (!copied || !QDir().rename(stagingDirStr, userStuffDirStr)) {
+    QDir(stagingDirStr).removeRecursively();
+    std::cerr << "Failed to initialize " << userStuffDirStr.toStdString()
+              << " from " << sourceLabel.toStdString() << std::endl;
+    return false;
+  }
+
+  // Writable dirs the app expects, possibly absent from the packaged tree.
   QDir().mkpath((userStuffDir + "projects" + "library").getQString());
   QDir().mkpath((userStuffDir + "projects" + "fxs").getQString());
   return true;
@@ -717,6 +794,16 @@ void TEnv::initUserStuffDir() {
   if (!configuredRoot.isEmpty() && configuredRoot != userStuffDir) return;
 
   if (!QDir().mkpath(userStuffDir.getParentDir().getQString())) return;
+  // On Android, the writable stuff tree is under AppDataLocation while the
+  // SystemVar.ini remains under QDir::homePath()/.config/ToonzTab.
+  const QString systemVarDirectory =
+      QFileInfo(eg->getSystemVarFile()).absolutePath();
+  if (!QDir().mkpath(systemVarDirectory)) {
+    std::cerr << "Could not create ToonzTab settings directory: "
+              << systemVarDirectory.toStdString() << std::endl;
+    return;
+  }
+
   if (!seedStuffTreeIfMissing(userStuffDir)) return;
   if (configuredRoot.isEmpty()) writeRootVar(eg, userStuffDir);
 #endif

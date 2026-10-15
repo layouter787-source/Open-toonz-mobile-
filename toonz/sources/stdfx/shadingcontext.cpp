@@ -1,7 +1,14 @@
 
 
 // Glew include
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include "tgl.h"
+#else
 #include <GL/glew.h>
+#endif
 
 // TnzCore includes
 #include "tgl.h"
@@ -89,6 +96,11 @@ QSurfaceFormat ShadingContext::Imp::format() {
 #ifdef MACOSX
   fmt.setVersion(3, 2);
   fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
+#elif defined(Q_OS_ANDROID) || defined(__ANDROID__)
+  // The shader effects context must expose GLES 3 for transform feedback and
+  // buffer APIs; Qt owns this offscreen EGL context, GL4ES supplies legacy GL.
+  fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+  fmt.setVersion(3, 0);
 #endif
 
   return fmt;
@@ -111,17 +123,24 @@ void ShadingContext::Imp::initMatrix(int lx, int ly) {
 
 ShadingContext::ShadingContext(QOffscreenSurface *surface) : m_imp(new Imp) {
   m_imp->m_surface = surface;
+  // Apply the same platform format to the surface before create(); Qt uses
+  // the surface's format when selecting the EGL/OpenGL config on Android.
+  const QSurfaceFormat format = Imp::format();
+  m_imp->m_surface->setFormat(format);
   m_imp->m_surface->create();
-  QSurfaceFormat format;
   m_imp->m_context->setFormat(format);
   m_imp->m_context->create();
   m_imp->m_context->makeCurrent(m_imp->m_surface);
 
   makeCurrent();
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
+  tglInitializeAndroidGLCompat();
+#else
   if (GLEW_VERSION_3_2) {
     glewExperimental = GL_TRUE;
   }
   glewInit();
+#endif
   doneCurrent();
 }
 
@@ -151,8 +170,7 @@ void ShadingContext::makeCurrent() {
   m_imp->m_context->moveToThread(QThread::currentThread());
   // Not create new context, use existing one
   if (!m_imp->m_context->isValid()) {
-    QSurfaceFormat format;
-    m_imp->m_context->setFormat(format);
+    m_imp->m_context->setFormat(Imp::format());
     m_imp->m_context->create();
   }
   m_imp->m_context->makeCurrent(m_imp->m_surface);

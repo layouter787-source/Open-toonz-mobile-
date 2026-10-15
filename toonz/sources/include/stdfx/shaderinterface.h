@@ -4,7 +4,13 @@
 #define SHADERINTERFACE_H
 
 // Glew includes
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
+#define GL_GLEXT_PROTOTYPES 1
+#include <GL/gl.h>
+#include <GL/glext.h>
+#else
 #include <GL/glew.h>  // Must be included before tgl.h
+#endif
 
 // TnzBase includes
 #include "tparamuiconcept.h"

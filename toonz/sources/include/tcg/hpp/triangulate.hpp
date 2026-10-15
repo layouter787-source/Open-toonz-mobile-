@@ -17,6 +17,9 @@
 #elif defined(LINUX) || defined(FREEBSD) || defined(HAIKU)
 #include <GL/glut.h>
 #include <cstring>
+#elif defined(Q_OS_ANDROID) || defined(__ANDROID__)
+#include <GL/glu.h>
+#include <cstring>
 #endif
 
 #ifndef TCG_GLU_CALLBACK

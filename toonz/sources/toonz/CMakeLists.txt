@@ -484,12 +484,41 @@ endif()
 
 qt5_wrap_cpp(SOURCES ${MOC_HEADERS})
 
-# Qt 5.15 androiddeployqt copies this directory into the Android packaging
-# tree. The top-level CMake guard remains enabled until the Android link branch
-# and all required ABI-compatible libraries are ready.
+# Qt 5.15 androiddeployqt copies this directory into the Android package.
+# Stage it under the build tree so generated assets never pollute the source tree.
+# The top-level CMake guard remains enabled until the native link/dependency path
+# and ABI-compatible libraries are ready.
 if(BUILD_TARGET_ANDROID)
-    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android" CACHE PATH
-        "Android package template directory for LayFrame Studio")
+    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android-package")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/android/" DESTINATION "${ANDROID_PACKAGE_SOURCE_DIR}")
+
+    # OpenToonz expects its "stuff" tree on a writable filesystem. Bundle the
+    # upstream tree as Android assets and a manifest; TEnv copies it once to the
+    # app-private data directory on first launch.
+    set(OPEN_TOONZ_STUFF_SOURCE_DIR "${CMAKE_SOURCE_DIR}/../../stuff")
+    if(NOT IS_DIRECTORY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/config")
+        message(FATAL_ERROR
+            "The OpenToonz stuff directory was not found: ${OPEN_TOONZ_STUFF_SOURCE_DIR}")
+    endif()
+
+    set(OPEN_TOONZ_ANDROID_ASSETS_DIR "${ANDROID_PACKAGE_SOURCE_DIR}/assets")
+    file(MAKE_DIRECTORY "${OPEN_TOONZ_ANDROID_ASSETS_DIR}")
+    file(COPY "${OPEN_TOONZ_STUFF_SOURCE_DIR}/"
+         DESTINATION "${OPEN_TOONZ_ANDROID_ASSETS_DIR}/stuff")
+
+    file(GLOB_RECURSE OPEN_TOONZ_STUFF_ASSETS
+         CONFIGURE_DEPENDS
+         LIST_DIRECTORIES false
+         RELATIVE "${OPEN_TOONZ_STUFF_SOURCE_DIR}"
+         "${OPEN_TOONZ_STUFF_SOURCE_DIR}/*")
+    file(WRITE "${OPEN_TOONZ_ANDROID_ASSETS_DIR}/stuff-manifest.txt" "")
+    foreach(OPEN_TOONZ_STUFF_ASSET IN LISTS OPEN_TOONZ_STUFF_ASSETS)
+        file(APPEND "${OPEN_TOONZ_ANDROID_ASSETS_DIR}/stuff-manifest.txt"
+             "${OPEN_TOONZ_STUFF_ASSET}\n")
+    endforeach()
+
+    list(LENGTH OPEN_TOONZ_STUFF_ASSETS OPEN_TOONZ_STUFF_ASSET_COUNT)
+    message(STATUS "Staged ${OPEN_TOONZ_STUFF_ASSET_COUNT} OpenToonz stuff assets for ToonzTab")
 endif()
 
 if(BUILD_ENV_MSVC)
@@ -497,8 +526,7 @@ if(BUILD_ENV_MSVC)
 elseif(BUILD_TARGET_ANDROID)
     add_executable(OpenToonz ${HEADERS} ${SOURCES} ${OBJCSOURCES} ${RESOURCES})
     add_dependencies(OpenToonz tnzcore tnzbase toonzlib colorfx tnzext image sound toonzqt tnztools tnzstdfx tfarm)
-    # Runtime Android permissions for the Qt camera pipeline use Qt Android Extras.
-    target_link_libraries(OpenToonz PRIVATE Qt5::AndroidExtras)
+    # Qt Android Extras is linked in the platform-specific link block below.
 else()
     set(MACOSX_BUNDLE_ICON_FILE "OpenToonz.icns")
     set_source_files_properties(OpenToonz.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
@@ -617,6 +645,21 @@ elseif(BUILD_ENV_APPLE)
         COMMAND ${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${CMAKE_INSTALL_RPATH} "$<TARGET_FILE:OpenToonz>" || true
         COMMENT "Adding RPATHs to OpenToonz executable"
     )
+
+elseif(BUILD_ENV_ANDROID)
+    # Android keeps the original OpenToonz executable and engine libraries.
+    # This branch is only reached with OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD=ON;
+    # it must not be treated as a verified or release-ready APK path.
+    target_link_libraries(OpenToonz
+        Qt5::Core Qt5::Gui Qt5::Network Qt5::OpenGL Qt5::Svg Qt5::Xml
+        Qt5::Script Qt5::Widgets Qt5::Multimedia Qt5::UiTools Qt5::AndroidExtras
+        ${GL_LIB} ${GLU_LIB} ${GLUT_LIB}
+        ${OpenCV_LIBS} ${TURBOJPEG_LIB} ${PNG_LIB} ${JPEG_LIB} ${TIFF_LIB}
+        ${Z_LIB} ${LZ4_LIB} ${SUPERLU_LIB} ${OPENBLAS_LIB}
+        ${MYPAINT_LIB_LIBRARIES} ${Boost_LIBRARIES}
+        tnzcore tnzbase toonzlib colorfx tnzext image sound toonzqt tnztools tnzstdfx tfarm
+    )
+    add_dependencies(OpenToonz tnzcore tnzbase toonzlib colorfx tnzext image sound toonzqt tnztools tnzstdfx tfarm)
 
 elseif(BUILD_ENV_UNIXLIKE)
     _find_toonz_library(EXTRA_LIBS "tnzcore;tnzbase;toonzlib;colorfx;tnzext;image;sound;toonzqt;tnztools")

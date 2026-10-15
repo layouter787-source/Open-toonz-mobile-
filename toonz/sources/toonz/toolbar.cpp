@@ -70,12 +70,23 @@ Toolbar::Toolbar(QWidget *parent, bool isVertical)
   else
     setOrientation(Qt::Horizontal);
 
+#ifdef Q_OS_ANDROID
+  // Make the original OpenToonz tools usable with a finger or stylus on a
+  // landscape tablet; desktop keeps the upstream compact toolbar metrics.
+  setIconSize(QSize(28, 28));
+  setStyleSheet(QStringLiteral(
+      "QToolButton { min-width: 48px; min-height: 48px; padding: 4px; }"));
+#else
   setIconSize(QSize(20, 20));
+#endif
   setToolButtonStyle(Qt::ToolButtonIconOnly);
 
   m_expandButton = new QToolButton(this);
   m_expandButton->setObjectName("expandButton");
   m_expandButton->setCheckable(true);
+#ifdef Q_OS_ANDROID
+  m_expandButton->setMinimumSize(48, 48);
+#endif
   m_expandButton->setChecked(m_isExpanded);
   m_expandButton->setArrowType((isVertical) ? Qt::DownArrow : Qt::RightArrow);
 

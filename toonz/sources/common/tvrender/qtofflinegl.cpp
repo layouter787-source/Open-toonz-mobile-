@@ -4,6 +4,9 @@
 #include <traster.h>
 #include <tconvert.h>
 
+#include <QImage>
+#include <QThread>
+
 //-----------------------------------------------------------------------------
 
 #if 0  // was _WIN32, this function not used
@@ -125,6 +128,9 @@ void QtOfflineGL::createContext(TDimension rasterSize,
 
 */
 
+#ifndef Q_OS_ANDROID
+  // Preserve the existing desktop context settings. The Android path below
+  // must not instantiate QGLFormat or request a compatibility profile.
   QGLFormat fmt;
 
 #if defined(_WIN32)
@@ -158,9 +164,18 @@ void QtOfflineGL::createContext(TDimension rasterSize,
   // printf("GL Version: %s\n",glGetString(GL_VERSION));
   fmt.setVersion(2, 1); /* XXX? */
 #endif
+#endif
 
   QSurfaceFormat format;
+#ifdef Q_OS_ANDROID
+  format.setRenderableType(QSurfaceFormat::OpenGLES);
+  format.setVersion(2, 0);
+  format.setAlphaBufferSize(8);
+  format.setDepthBufferSize(24);
+  format.setStencilBufferSize(8);
+#else
   format.setProfile(QSurfaceFormat::CompatibilityProfile);
+#endif
 
   m_surface = std::make_shared<QOffscreenSurface>();
   m_surface->setFormat(format);
@@ -233,6 +248,7 @@ void QtOfflineGL::getRaster(TRaster32P raster) {
 // QGLPixelBuffer::hasOpenGLPbuffers() (statica) -> true se la scheda supporta i
 // PBuffer
 
+#ifndef Q_OS_ANDROID
 //=============================================================================
 // QtOfflineGLPBuffer : implem. offlineGL usando QT e PBuffer
 //-----------------------------------------------------------------------------
@@ -372,3 +388,5 @@ void QtOfflineGLPBuffer::getRaster(TRaster32P raster) {
   }
   raster->unlock();
 }
+
+#endif  // !Q_OS_ANDROID: legacy QGLPixelBuffer backend

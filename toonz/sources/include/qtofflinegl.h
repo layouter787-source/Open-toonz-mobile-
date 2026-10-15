@@ -5,11 +5,18 @@
 
 #include <memory>
 
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
+#include <QOpenGLFramebufferObject>
+
+#ifndef Q_OS_ANDROID
+// Desktop-only compatibility and PBuffer APIs are not present in the Android
+// OpenGL ES path. QtOfflineGL below uses QOpenGLContext + an FBO instead.
 #include <QtOpenGL>
 #include <QGLFormat>
 #include <QGLContext>
 #include <QGLPixelBuffer>
-#include <QOpenGLFramebufferObject>
+#endif
 
 #include "tofflinegl.h"
 
@@ -36,6 +43,7 @@ public:
 
 //-----------------------------------------------------------------------------
 
+#ifndef Q_OS_ANDROID
 class QtOfflineGLPBuffer final : public TOfflineGL::Imp {
 public:
   std::shared_ptr<QGLPixelBuffer> m_context;
@@ -49,5 +57,6 @@ public:
 
   void getRaster(TRaster32P raster) override;
 };
+#endif
 
 #endif

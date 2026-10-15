@@ -455,6 +455,7 @@ void ImageViewer::hideHistogram() {
 //-------------------------------------------------------------------
 
 void ImageViewer::initializeGL() {
+  tglInitializeAndroidGLCompat();
   initializeOpenGLFunctions();
 
   // to be computed once through the software

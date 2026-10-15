@@ -8,18 +8,26 @@
 #include "timage_io.h"
 #include "tcurves.h"
 
+#include <mutex>
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
+#include <EGL/egl.h>
+#include <gl4esinit.h>
+#endif
+
 #ifndef __sgi
 #ifdef _WIN32
 #include <cstdlib>
 #include <GL/glut.h>
 #elif defined(LINUX) || defined(FREEBSD) || defined(HAIKU)
 #include <GL/glut.h>
+#elif defined(Q_OS_ANDROID) || defined(__ANDROID__)
+#include <GL/glut.h>
 #else
 #include <GLUT/glut.h>
 #endif
 #endif
 
-#if defined(MACOSX) || defined(LINUX) || defined(FREEBSD) || defined(HAIKU)
+#if defined(MACOSX) || defined(LINUX) || defined(FREEBSD) || defined(HAIKU) || defined(Q_OS_ANDROID) || defined(__ANDROID__)
 #include <QGLContext>
 #endif
 
@@ -29,6 +37,40 @@
 //#undef NEW_DRAW_TEXT
 
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Android OpenGL compatibility bootstrap
+//-----------------------------------------------------------------------------
+
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
+static void *APIENTRY_GL4ES toonzGL4ESGetProcAddress(const char *name) {
+  return reinterpret_cast<void *>(eglGetProcAddress(name));
+}
+#endif
+
+void tglInitializeAndroidGLCompat() {
+#if defined(Q_OS_ANDROID) || defined(__ANDROID__)
+  // Qt owns EGL and has already made this widget's GLES context current when
+  // initializeGL() calls this function. GL4ES uses that current context.
+  static std::once_flag initialized;
+  std::call_once(initialized, []() {
+    set_getprocaddress(toonzGL4ESGetProcAddress);
+    set_getmainfbsize([](int *width, int *height) {
+      EGLDisplay display = eglGetCurrentDisplay();
+      EGLSurface surface = eglGetCurrentSurface(EGL_DRAW);
+      EGLint surfaceWidth = 0;
+      EGLint surfaceHeight = 0;
+      if (display != EGL_NO_DISPLAY && surface != EGL_NO_SURFACE) {
+        eglQuerySurface(display, surface, EGL_WIDTH, &surfaceWidth);
+        eglQuerySurface(display, surface, EGL_HEIGHT, &surfaceHeight);
+      }
+      if (width) *width = surfaceWidth > 0 ? surfaceWidth : 1;
+      if (height) *height = surfaceHeight > 0 ? surfaceHeight : 1;
+    });
+    initialize_gl4es();
+  });
+#endif
+}
 
 namespace {
 
@@ -598,7 +640,7 @@ void tglMakeCurrent(TGlContext context) {
 
 void tglDoneCurrent(TGlContext) { wglMakeCurrent(NULL, NULL); }
 
-#elif defined(LINUX) || defined(FREEBSD) || defined(__sgi) || defined(MACOSX) || defined(HAIKU)
+#elif defined(LINUX) || defined(FREEBSD) || defined(__sgi) || defined(MACOSX) || defined(HAIKU) || defined(Q_OS_ANDROID) || defined(__ANDROID__)
 
 TGlContext tglGetCurrentContext() {
   return reinterpret_cast<TGlContext>(

@@ -50,6 +50,11 @@ elseif(BUILD_ENV_APPLE)
 	    "$<TARGET_FILE:toonzlib>"
     )
     add_dependencies(tfarm tnzcore tnzbase toonzlib tnzext)
+elseif(BUILD_ENV_ANDROID)
+    # Android cross-builds cannot use host library paths. Link the sibling
+    # OpenToonz targets directly so tfarm resolves TIStream/TOStream/TThread.
+    set(EXTRA_LIBS tnzcore tnzbase toonzlib tnzext)
+    add_dependencies(tfarm tnzcore tnzbase toonzlib tnzext)
 elseif(BUILD_ENV_UNIXLIKE)
     _find_toonz_library(EXTRA_LIBS "tnzcore;tnzbase;toonzlib;tnzext")
     if(BUILD_TARGET_WIN)

@@ -2,7 +2,7 @@
 <!-- Based on the Qt 5.15 Android package template; preserve the %%INSERT_*%% placeholders
      because androiddeployqt replaces them while packaging the application. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.github.layframe.studio"
+    package="com.toonz.tab"
     android:versionName="-- %%INSERT_VERSION_NAME%% --"
     android:versionCode="-- %%INSERT_VERSION_CODE%% --"
     android:installLocation="auto">
@@ -14,6 +14,8 @@
     <!-- Needed by the tablet pencil-test / stop-motion camera pipeline. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- A drawing tablet must have a real touchscreen; stylus support is handled through Qt input events. -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="true" />
 
     <!-- This edition targets landscape-oriented tablets; small-screen devices are excluded. -->
     <supports-screens
@@ -27,11 +29,11 @@
         android:name="org.qtproject.qt5.android.bindings.QtApplication"
         android:hardwareAccelerated="true"
         android:extractNativeLibs="true"
-        android:label="LayFrame Studio">
+        android:label="ToonzTab">
 
         <activity
             android:name="org.qtproject.qt5.android.bindings.QtActivity"
-            android:label="LayFrame Studio"
+            android:label="ToonzTab"
             android:exported="true"
             android:screenOrientation="landscape"
             android:launchMode="singleTop"

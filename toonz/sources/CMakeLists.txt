@@ -126,6 +126,9 @@ option(WITH_SYSTEM_SUPERLU "Use the system SuperLU library instead of 'thirdpart
 option(WITH_CANON "Build with Canon DSLR support - Requires Canon SDK" OFF)
 option(WITH_TRANSLATION "Generate translation projects as well" ON)
 option(WITH_WINTAB "(Windows only) Build with customized Qt with WinTab support. https://github.com/shun-iwasawa/qt5/releases/tag/v5.15.2_wintab" OFF)
+option(OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD
+    "Opt in to configuring the original C++/Qt OpenToonz target for Android; dependency support is incomplete"
+    OFF)
 
 # avoid using again
 option_defaults_clear()
@@ -310,16 +313,18 @@ include_directories(
     include
   )
 
-# The full OpenToonz app still requests desktop-only Qt modules and third-party
-# libraries below. Stop Android configuration here until a dedicated mobile
-# dependency set and app target have been implemented; otherwise CMake may
-# proceed as if this were a desktop build and report misleading errors.
+# Keep the safe default fail-fast behavior, but provide an explicit opt-in
+# for developers/CI to exercise the original native target while the remaining
+# Android dependency matrix is being ported. This is not a claim that it builds.
 if(BUILD_ENV_ANDROID)
-    message(FATAL_ERROR
-        "Android NDK detected, but the full OpenToonz Android tablet target is not ready. "
-        "The Android graphics/native-dependency link path is incomplete (including OpenCV, "
-        "OpenGL/GLEW assumptions, and other native libraries). "
-        "See doc/android_tablet_dependency_matrix.md. This guard prevents a false desktop/Unix build.")
+    if(NOT OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD)
+        message(FATAL_ERROR
+            "Android NDK detected, but the full OpenToonz Android tablet target is not ready. "
+            "The Android graphics/native-dependency link path is incomplete. "
+            "See doc/android_tablet_dependency_matrix.md. To test the unfinished native path explicitly, "
+            "set OPEN_TOONZ_ANDROID_EXPERIMENTAL_NATIVE_BUILD=ON.")
+    endif()
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AndroidLegacyGL.cmake")
 endif()
 
 # Find the QtWidgets library
@@ -354,6 +359,18 @@ find_package(Qt5 REQUIRED ${OPEN_TOONZ_QT_MODULES})
 if(NOT Qt5Core_FOUND)
     message(FATAL_ERROR "Qt5Core not found check paths")
 endif()
+
+# The Android cross-build does not pass through the desktop find_package(Qt5Widgets)
+# path above. Export Qt include directories globally for legacy targets that include
+# Qt headers directly (for example <QMutex>) instead of linking imported Qt targets.
+if(BUILD_ENV_ANDROID)
+    include_directories(SYSTEM
+        ${Qt5Core_INCLUDE_DIRS}
+        ${Qt5Gui_INCLUDE_DIRS}
+        ${Qt5Network_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
+    )
+endif()
 message(STATUS "Qt5 Modules: ${Qt5Core_VERSION}")
 
 set(QT_MINIMUM_VERSION 5.5.0)
@@ -378,7 +395,23 @@ endif()
 
 
 if(PLATFORM EQUAL 64)
-    if(BUILD_ENV_UNIXLIKE)
+    if(BUILD_TARGET_ANDROID)
+        # Never let a cross-build discover a host OpenCV installation. The
+        # Android SDK must contain ABI-specific imported targets/libraries.
+        if(NOT OpenCV_DIR)
+            message(FATAL_ERROR
+                "ToonzTab requires the OpenCV Android SDK. Set "
+                "OPEN_TOONZ_ANDROID_OPENCV_ROOT to the extracted SDK root "
+                "(containing sdk/native/jni/OpenCVConfig.cmake), or set OpenCV_DIR "
+                "to that sdk/native/jni directory.")
+        endif()
+        find_package(OpenCV 4.1 REQUIRED CONFIG)
+        if(NOT OpenCV_FOUND OR NOT OpenCV_LIBS)
+            message(FATAL_ERROR
+                "The configured OpenCV package did not provide Android libraries. "
+                "Check OPEN_TOONZ_ANDROID_OPENCV_ROOT and the selected Android ABI.")
+        endif()
+    elseif(BUILD_ENV_UNIXLIKE)
         find_package(OpenCV REQUIRED)
     else() # Windows and MacOS case
         find_package(OpenCV 4.1 REQUIRED)

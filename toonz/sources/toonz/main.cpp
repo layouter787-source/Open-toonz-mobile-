@@ -87,6 +87,7 @@
 #include <QSettings>
 #include <QLibraryInfo>
 #include <QHash>
+#include <QSurfaceFormat>
 
 #ifdef _WIN32
 #ifndef x64
@@ -167,12 +168,21 @@ static void initToonzEnv(QHash<QString, QString> &argPathValues) {
     ++i;
   }
 
+#ifdef Q_OS_ANDROID
+  // Use the tablet edition's identity for Android settings and app metadata.
+  QCoreApplication::setOrganizationName("ToonzTab");
+  QCoreApplication::setOrganizationDomain("com.toonz.tab");
+  QGuiApplication::setDesktopFileName("com.toonz.tab");
+  QGuiApplication::setWindowIcon(QIcon::fromTheme("com.toonz.tab"));
+  QCoreApplication::setApplicationName("ToonzTab");
+#else
   QCoreApplication::setOrganizationName("OpenToonz");
   QCoreApplication::setOrganizationDomain("");
   QGuiApplication::setDesktopFileName("io.github.OpenToonz");
   QGuiApplication::setWindowIcon(QIcon::fromTheme("io.github.OpenToonz"));
   QCoreApplication::setApplicationName(
       QString::fromStdString(TEnv::getApplicationName()));
+#endif
 
   /*-- TOONZROOTのPathの確認 --*/
   // controllo se la xxxroot e' definita e corrisponde ad un folder esistente
@@ -492,11 +502,20 @@ int main(int argc, char *argv[]) {
   if (!isRunScript) splash.show();
   a.processEvents();
 
-  splash.showMessage(offsetStr + "Initializing QGLFormat...", Qt::AlignCenter,
+  splash.showMessage(offsetStr + "Initializing graphics...", Qt::AlignCenter,
                      Qt::white);
   a.processEvents();
 
-  // OpenGL
+#ifdef Q_OS_ANDROID
+  // Android uses EGL/OpenGL ES. Do not initialize the desktop GLUT runtime or
+  // request a legacy desktop QGLFormat on the tablet build.
+  QSurfaceFormat fmt = QSurfaceFormat::defaultFormat();
+  fmt.setAlphaBufferSize(8);
+  fmt.setStencilBufferSize(8);
+  fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+  QSurfaceFormat::setDefaultFormat(fmt);
+#else
+  // Preserve the original desktop graphics initialization.
   QGLFormat fmt;
   fmt.setAlpha(true);
   fmt.setStencil(true);
@@ -504,6 +523,7 @@ int main(int argc, char *argv[]) {
 
 #ifndef __HAIKU__
   glutInit(&argc, argv);
+#endif
 #endif
 
   splash.showMessage(offsetStr + "Initializing Toonz environment ...",
@@ -642,7 +662,11 @@ int main(int argc, char *argv[]) {
   a.processEvents();
 
   // stile
+#ifdef Q_OS_ANDROID
+  QApplication::setStyle("Fusion");
+#else
   QApplication::setStyle("windows");
+#endif
 
   IconGenerator::setFilmstripIconSize(Preferences::instance()->getIconSize());
 
@@ -652,8 +676,13 @@ int main(int argc, char *argv[]) {
 
   loadShaderInterfaces(ToonzFolder::getLibraryFolder() + TFilePath("shaders"));
 
+#ifdef Q_OS_ANDROID
+  splash.showMessage(offsetStr + "Initializing ToonzTab ...", Qt::AlignCenter,
+                     Qt::white);
+#else
   splash.showMessage(offsetStr + "Initializing OpenToonz ...", Qt::AlignCenter,
                      Qt::white);
+#endif
   a.processEvents();
 
   // Initialize ThemeManager before TApp
