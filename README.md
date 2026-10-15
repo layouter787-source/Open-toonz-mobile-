@@ -2,7 +2,7 @@
 
 **ToonzTab** é o nome de trabalho desta adaptação do OpenToonz para tablets Android em orientação horizontal. A base do produto deve continuar a ser o código original C++/Qt e o motor de animação do OpenToonz — não uma aplicação redesenhada do zero.
 
-> **Estado real (10 de outubro de 2026):** a adaptação nativa está em desenvolvimento. Ainda não há compilação Android bem-sucedida do OpenToonz completo nem APK verificado com o motor original.
+> **Estado real (15 de outubro de 2026):** a configuração CMake Android já passou num run recente, mas a ligação C++ e a criação do APK ainda estão em validação. Não há APK verificado neste momento.
 
 ## Direção do projeto
 
@@ -11,7 +11,7 @@
 - **Interface:** adaptar a interface original para ecrã horizontal, toque e caneta digital. A adaptação deve acontecer na aplicação nativa existente.
 - **Identidade Android:** ToonzTab, pacote `com.toonz.tab`, com orientação horizontal definida no manifesto Qt.
 - **Dados do motor:** o caminho CMake nativo prepara o `stuff/` original como assets e `TEnv` copia esses ficheiros para o armazenamento privado no primeiro arranque. Essa parte ainda não foi validada num APK porque o bloqueio de dependências continua ativo.
-- **Compilação:** o projeto usa CMake/Qt e já contém deteção de Android e algumas seleções de código específicas da plataforma. O CMake mantém deliberadamente uma barreira de segurança porque a ligação das dependências nativas e o caminho gráfico Android ainda não estão concluídos.
+- **Compilação:** o projeto usa CMake/Qt e já contém deteção de Android e algumas seleções de código específicas da plataforma. O CMake mantém a opção Android experimental desativada por padrão; o workflow de CI ativa-a explicitamente para encontrar e corrigir os bloqueios restantes.
 
 ## Trabalho nativo já iniciado
 
@@ -43,11 +43,13 @@ A auditoria estática verifica condições do código e do manifesto; não é um
 Este projeto deriva do [OpenToonz](https://github.com/opentoonz/opentoonz), um programa de animação 2D de código aberto. Esta é uma adaptação independente, não uma versão oficial do OpenToonz. Preservar `LICENSE.txt`, os avisos de direitos de autor e as licenças dos componentes de terceiros ao distribuir código ou binários.
 
 
-## Estado da compilação Android — 12 de outubro de 2026
+## Estado da compilação Android — 15 de outubro de 2026
 
-**Estado: bloqueado na ligação C++ nativa; não existe APK gerado/validado.** A configuração CMake consegue concluir e o workflow instala Android SDK/NDK, Qt 5.15.2, OpenCV Android e os headers Boost verificados. O alvo original ainda falha ao compilar/ligar.
+**Estado: validação em curso; não existe APK gerado/validado confirmado.** O workflow instala Android SDK/NDK, Qt 5.15.2, OpenCV Android e headers Boost verificados, compila o alvo original e tenta empacotar um APK debug para ARM64. O resultado final ainda depende do CI.
 
-- [Run mais recente, falha na ligação](https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208792779)
+- [Workflow de APK tablet ARM64 (em validação)](https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38707636719)
+- [Run anterior de compilação, falha na ligação](https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38704535097)
+- [Run mais antigo, falha na ligação](https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208792779)
 - [Run anterior, erros iniciais de compilação](https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38208331733)
 - O workflow guarda os logs como artefactos da execução. O relatório completo de diagnóstico e as tarefas para o próximo agente estão em [Claude.md](./Claude.md).
 
@@ -60,3 +62,8 @@ Este projeto deriva do [OpenToonz](https://github.com/opentoonz/opentoonz), um p
 5. **Problemas anteriores que não aparecem como erros fatais no run mais recente:** QMutex file not found e ausência de construtor de TPixelRGBM64 apareceram no run 38208331733. O run 38208792779 passou por essas unidades e avançou até à ligação; confirmar que continuam resolvidos em builds seguintes.
 
 Não declarar sucesso com base apenas em configuração CMake ou compilação parcial. O critério continua a ser: C++ original ligado para ARM64, APK Qt empacotado, instalação e teste num tablet Android real.
+
+
+### Workflow para obter o APK
+
+Executar manualmente [Android Tablet APK (OpenToonz ARM64)](https://github.com/layouter787-source/Open-toonz-mobile-/actions/workflows/android-native-configure.yml) em **Actions → Android Tablet APK (OpenToonz ARM64) → Run workflow**. Se todos os passos passarem, descarregar o artefacto `ToonzTab-tablet-arm64-debug-apk`. A presença do workflow não garante que o build já passou; conferir o estado da execução e o artefacto.
