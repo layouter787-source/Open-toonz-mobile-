@@ -26,4 +26,4 @@ Alternatively, set `OPENCV_ANDROID_SDK_ROOT` to the same directory. Keep the dow
 
 ## Current limits
 
-This script only prepares OpenCV. It does not compile OpenToonz, does not supply the Android Qt kit, and does not solve the existing OpenGL/GLEW/GLU/GLUT assumptions or the other ABI-specific libraries. The root CMake Android guard must remain until those are ported and the original application target can configure and link.
+This script only prepares OpenCV. It does not compile OpenToonz or supply the Android Qt kit. The repository now has an experimental opt-in native build and an `Android Tablet APK (OpenToonz ARM64)` workflow that attempts the original C++/Qt build and `androiddeployqt` packaging. It is not release-ready until that workflow succeeds, publishes an APK artifact, and the APK is installed and tested on an ARM64 Android tablet. The remaining third-party ABI, rendering, and runtime dependencies must be checked from the current CI logs.
