@@ -307,3 +307,35 @@ A auditoria estática passou. Isso não comprova configuração CMake, compilaç
 - Nenhum APK foi confirmado por estes workflows.
 
 **Próxima ação:** corrigir a causa da lista incompleta em `AndroidLegacyGL.cmake`, repetir os dois workflows Android e registar os novos resultados. Não declarar sucesso sem confirmação dos jobs.
+
+
+## Reverificação dos workflows — 2026-10-15 (commit `f2b6e8a6`)
+
+Commit testado: https://github.com/layouter787-source/Open-toonz-mobile-/commit/f2b6e8a6
+Título reportado: `fix(android): make GL4ES glShaderSource prototype compatible with NDK…`.
+
+### Resultados novos
+- Android Native OpenToonz Configure: **falhou** — https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38699134024
+- Android Native Graphics Compatibility: **falhou** — https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38699134202
+- Android Tablet Port Audit: **passou** — https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38699134067
+- Linux Build e macOS Build: estavam **em execução** na última consulta — https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38699134078 e https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38699133904. Voltar a consultar antes de declarar resultado final.
+
+### Erro CMake reproduzido, agora na linha 254
+Ambos os workflows Android falharam com:
+```text
+CMake Error at cmake/AndroidLegacyGL.cmake:254 (list):
+  list index: 1 out of range (-1, 0)
+```
+No workflow principal, a etapa falhada foi `Configure the original C++/Qt application (experimental)`; no workflow gráfico, foi `Configure compatibility libraries with the NDK`.
+
+### Causa identificada ao inspecionar o código atual
+Na função `opentoonz_android_link_module_graph`, a lista `_edges` contém entradas como `"tnzext|tnzcore;tnzbase"` e `"toonzlib|tnzcore;tnzbase;tnzext"`. Em CMake, ponto e vírgula é separador de elementos de lista mesmo dentro de uma string entre aspas. Assim, essas entradas são divididas em vários elementos antes do `foreach(_edge IN LISTS _edges)`. Quando o loop recebe um elemento sem o separador `|`, `string(REPLACE "|" ";" _parts "${_edge}")` produz uma lista com apenas um elemento; o `list(GET _parts 1 _deps)` da linha 254 tenta obter um segundo elemento inexistente e falha.
+
+Esta é a causa técnica indicada pelo código atual e coincide com o erro observado no log. A correção deve representar cada aresta sem permitir que os separadores de dependências dividam prematuramente a lista exterior (por exemplo, usar uma representação/estrutura de dados que não dependa de listas CMake aninhadas com o mesmo delimitador, ou processar as arestas individualmente). Depois, executar de novo ambos os workflows Android. Esta documentação não altera o CMake.
+
+A alteração de protótipo `glShaderSource` indicada no título do commit não foi suficiente para deixar os workflows Android verdes: a configuração para antes da compilação completa e volta a parar no processamento de `_edges`. Estes logs não confirmam se o conflito anterior de `glShaderSource` foi resolvido numa fase de compilação, porque a configuração falha antes disso.
+
+### Aviso de download
+O log anterior também mostrou timeout de 100 segundos ao descarregar `android-actions/setup-android`. É um problema de rede separado; não é a causa do erro CMake de lista inválida.
+
+**Estado:** nenhum APK foi confirmado. A auditoria estática aprovada não equivale a compilação Android. Atualizar esta secção depois de consultar novamente Linux/macOS e depois de Claude corrigir a representação de `_edges` e repetir os workflows Android.
