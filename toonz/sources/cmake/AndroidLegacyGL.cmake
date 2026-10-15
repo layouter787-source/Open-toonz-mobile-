@@ -174,6 +174,56 @@ set(OPEN_TOONZ_ANDROID_LEGACY_GL_READY TRUE)
 message(STATUS "ToonzTab: configured pinned GL4ES + Android GLU compatibility libraries")
 
 # ---------------------------------------------------------------------------
+# glShaderSource prototype compatibility between GL4ES and the NDK's GLES2.
+#
+# Qt for Android includes <GLES2/gl2.h> (Khronos: const GLchar *const *string)
+# while OpenToonz includes GL4ES' <GL/gl.h> through tgl.h. Both end up in the
+# same translation unit (e.g. toonzlib/imagebuilders.cpp) and the compiler
+# reports "typedef redefinition with different types" / "conflicting types for
+# glShaderSource" when one of them declares `const GLchar **`.
+#
+# The pinned GL4ES headers are NOT edited in the fetched source tree (GL4ES
+# itself is compiled against them). Instead, only when the offending
+# `const GLchar **` form is actually present, a patched COPY of the include
+# directory is created in the build tree and put first on the include path for
+# the OpenToonz modules. If nothing needs patching, nothing changes.
+# The relevant lines are printed so the next CI log shows the real header text.
+# ---------------------------------------------------------------------------
+set(OPEN_TOONZ_GL4ES_GLEXT "${opentoonz_gl4es_SOURCE_DIR}/include/GL/glext.h")
+if(EXISTS "${OPEN_TOONZ_GL4ES_GLEXT}")
+    file(STRINGS "${OPEN_TOONZ_GL4ES_GLEXT}" _ot_ss_lines
+        REGEX "PFNGLSHADERSOURCEPROC|glShaderSource[ \t]*\\(")
+    message(STATUS "ToonzTab: GL4ES glShaderSource declarations: ${_ot_ss_lines}")
+
+    file(READ "${OPEN_TOONZ_GL4ES_GLEXT}" _ot_glext_text)
+    set(_ot_glext_patched "${_ot_glext_text}")
+    string(REGEX REPLACE
+        "(glShaderSource[ \t]*\\([^;]*const[ \t]+GLchar[ \t]*)\\*[ \t]*\\*"
+        "\\1*const *" _ot_glext_patched "${_ot_glext_patched}")
+    string(REGEX REPLACE
+        "(PFNGLSHADERSOURCEPROC[ \t]*\\)[^;]*const[ \t]+GLchar[ \t]*)\\*[ \t]*\\*"
+        "\\1*const *" _ot_glext_patched "${_ot_glext_patched}")
+
+    if(NOT "${_ot_glext_patched}" STREQUAL "${_ot_glext_text}")
+        set(OPEN_TOONZ_GL4ES_PATCHED_INCLUDE
+            "${CMAKE_BINARY_DIR}/opentoonz-gl4es-include")
+        file(MAKE_DIRECTORY "${OPEN_TOONZ_GL4ES_PATCHED_INCLUDE}")
+        file(COPY "${opentoonz_gl4es_SOURCE_DIR}/include/"
+            DESTINATION "${OPEN_TOONZ_GL4ES_PATCHED_INCLUDE}")
+        file(WRITE "${OPEN_TOONZ_GL4ES_PATCHED_INCLUDE}/GL/glext.h"
+            "${_ot_glext_patched}")
+        # Last BEFORE call wins: the patched GL headers are searched first by
+        # every OpenToonz module added after this point.
+        include_directories(BEFORE SYSTEM "${OPEN_TOONZ_GL4ES_PATCHED_INCLUDE}")
+        message(STATUS "ToonzTab: patched GL4ES glShaderSource prototype for NDK GLES2 compatibility")
+    else()
+        message(STATUS "ToonzTab: GL4ES glShaderSource prototype needs no patch")
+    endif()
+else()
+    message(WARNING "ToonzTab: GL4ES glext.h not found at ${OPEN_TOONZ_GL4ES_GLEXT}")
+endif()
+
+# ---------------------------------------------------------------------------
 # Inter-module link graph for Android.
 #
 # The per-module CMakeLists only link the sibling OpenToonz libraries inside
