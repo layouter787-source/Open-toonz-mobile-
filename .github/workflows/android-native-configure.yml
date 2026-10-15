@@ -1,4 +1,4 @@
-name: Android Native OpenToonz Configure
+name: Android Tablet APK (OpenToonz ARM64)
 
 on:
   push:
@@ -91,6 +91,59 @@ jobs:
           set -euo pipefail
           cmake --build build/android-opentoonz-arm64 --target OpenToonz --parallel 2 2>&1 | tee build/android-opentoonz-arm64/android-build.log
 
+      - name: Install Java 11 for Qt 5.15 Android packaging
+        if: success()
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+
+      - name: Package installable tablet APK with androiddeployqt
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILD_DIR="$GITHUB_WORKSPACE/build/android-opentoonz-arm64"
+          QT_ANDROIDDEPLOYQT="$(find "$QT_ROOT_DIR" -type f -name androiddeployqt -perm -111 -print -quit)"
+          test -n "$QT_ANDROIDDEPLOYQT" && test -x "$QT_ANDROIDDEPLOYQT"
+          DEPLOY_SETTINGS="$(find "$BUILD_DIR" -type f -name '*deployment-settings.json' -print -quit)"
+          if [ -z "$DEPLOY_SETTINGS" ]; then
+            echo "Qt deployment settings JSON was not generated. Cannot package an APK."
+            find "$BUILD_DIR" -maxdepth 5 -type f -name '*.json' -print | head -n 80
+            exit 1
+          fi
+          ANDROID_OUT="$BUILD_DIR/android-build"
+          mkdir -p "$ANDROID_OUT"
+          echo "Using androiddeployqt: $QT_ANDROIDDEPLOYQT"
+          echo "Using deployment settings: $DEPLOY_SETTINGS"
+          "$QT_ANDROIDDEPLOYQT" --input "$DEPLOY_SETTINGS" --output "$ANDROID_OUT" --android-platform android-35 --jdk "$JAVA_HOME" --gradle
+          APK="$(find "$ANDROID_OUT" -type f -name '*.apk' -print | sort | head -n 1)"
+          if [ -z "$APK" ]; then
+            echo "androiddeployqt finished but no APK was found."
+            find "$ANDROID_OUT" -maxdepth 8 -type f | head -n 200
+            exit 1
+          fi
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          cp "$APK" "$GITHUB_WORKSPACE/dist/ToonzTab-tablet-arm64-debug.apk"
+          test -s "$GITHUB_WORKSPACE/dist/ToonzTab-tablet-arm64-debug.apk"
+          unzip -t "$GITHUB_WORKSPACE/dist/ToonzTab-tablet-arm64-debug.apk"
+          AAPT="$(find "$ANDROID_SDK_ROOT/build-tools" -type f -name aapt -print | sort -V | tail -n 1)"
+          if [ -n "$AAPT" ]; then
+            "$AAPT" dump badging "$GITHUB_WORKSPACE/dist/ToonzTab-tablet-arm64-debug.apk" | tee "$GITHUB_WORKSPACE/dist/apk-badging.txt"
+          fi
+          sha256sum "$GITHUB_WORKSPACE/dist/ToonzTab-tablet-arm64-debug.apk" | tee "$GITHUB_WORKSPACE/dist/SHA256SUMS.txt"
+
+      - name: Upload installable tablet APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ToonzTab-tablet-arm64-debug-apk
+          path: |
+            dist/ToonzTab-tablet-arm64-debug.apk
+            dist/apk-badging.txt
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Extract concise native build diagnostics
         if: always()
         shell: bash
@@ -127,6 +180,10 @@ jobs:
             build/android-opentoonz-arm64/android-build-diagnostics.txt
             build/android-opentoonz-arm64/CMakeFiles/CMakeOutput.log
             build/android-opentoonz-arm64/CMakeFiles/CMakeError.log
+            build/android-opentoonz-arm64/android-build.log
+            build/android-opentoonz-arm64/android-build/**/*.log
+            build/android-opentoonz-arm64/android-build/**/*.txt
+            build/android-opentoonz-arm64/android-build/**/*deployment-settings.json
           if-no-files-found: ignore
 
       - name: Save CMake configure log on failure
