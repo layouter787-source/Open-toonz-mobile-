@@ -741,7 +741,7 @@ bool seedStuffTreeIfMissing(const TFilePath &userStuffDir) {
 
 #ifdef Q_OS_ANDROID
   sourceLabel = QStringLiteral("assets:/stuff");
-  copied = copyAndroidStuffAssets(stagingDirStr);
+  copied      = copyAndroidStuffAssets(stagingDirStr);
 #else
   const TFilePath installedStuffDir = getInstalledStuffDir();
   sourceLabel = installedStuffDir.getQString();
