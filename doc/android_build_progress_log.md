@@ -43,3 +43,7 @@ Nenhum APK existe; a auditoria estatica aprovada nao e compilacao Android.
 - A compilação do run 38707636719 parou em toonz/sources/common/tgl/tgl.cpp:665 com error: "unknown platform!", porque o bloco de implementação do contexto GL não incluía Android. Correção aplicada no commit 319fbfc adicionando Q_OS_ANDROID / __ANDROID__ ao ramo de contexto Qt.
 - Foram ajustadas duas quebras de linha em tenv.cpp para resolver clang-format (commit 12cc2de); o resultado da nova verificação ainda está pendente.
 - Novo workflow APK: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708126068 . Nenhum APK verificado até este registo.
+
+
+- Clang-format: o segundo run encontrou desalinhamento em tenv.cpp:744 por AlignConsecutiveAssignments; corrigido no commit b486cf1. Verificar o novo run de formatação.
+- Workflow APK em execução: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708230263 . Ainda não há APK verificado.
