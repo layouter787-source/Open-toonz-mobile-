@@ -1768,3 +1768,10 @@ O run 38707636717 de clang-format falhou nas alterações anteriores de tenv.cpp
 - Run duplicado no mesmo commit: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708129179
 - No momento do registo, o run estava na preparação do Android SDK; nenhum APK foi produzido/confirmado.
 - Os erros anteriores de ligação de tfarm e sys/dir.h ainda precisam de ser reavaliados depois que a compilação passar de tgl.cpp; a falha atual interrompeu o build antes de confirmar essas correções.
+
+
+### Correção adicional de clang-format
+
+O run 38708129106 ainda falhou apenas em tenv.cpp:744:9. A causa é a opção AlignConsecutiveAssignments do ficheiro .clang-format: os dois assignments consecutivos do ramo Android precisam alinhar o sinal de igual. Corrigido em b486cf1b459b58f80d905c843fce98bc534da64b com `copied      = copyAndroidStuffAssets(stagingDirStr);`. A verificação para o commit novo ainda precisa concluir.
+
+Run Android APK após a correção do contexto GL: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708230263 . No momento, o workflow ainda estava em execução; APK não confirmado.
