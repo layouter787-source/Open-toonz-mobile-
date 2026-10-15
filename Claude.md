@@ -1775,3 +1775,29 @@ O run 38707636717 de clang-format falhou nas alterações anteriores de tenv.cpp
 O run 38708129106 ainda falhou apenas em tenv.cpp:744:9. A causa é a opção AlignConsecutiveAssignments do ficheiro .clang-format: os dois assignments consecutivos do ramo Android precisam alinhar o sinal de igual. Corrigido em b486cf1b459b58f80d905c843fce98bc534da64b com `copied      = copyAndroidStuffAssets(stagingDirStr);`. A verificação para o commit novo ainda precisa concluir.
 
 Run Android APK após a correção do contexto GL: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708230263 . No momento, o workflow ainda estava em execução; APK não confirmado.
+
+
+### Erros de formatação do adaptador GLUT e correção
+
+O run clang-format 38708376953 identificou as seguintes linhas em toonz/sources/common/tgl/android_glut_fonts.c:
+
+```text
+android_glut_fonts.c:57:22: error: code should be clang-formatted [-Wclang-format-violations]
+android_glut_fonts.c:58:26: error: code should be clang-formatted [-Wclang-format-violations]
+android_glut_fonts.c:59:22: error: code should be clang-formatted [-Wclang-format-violations]
+android_glut_fonts.c:60:22: error: code should be clang-formatted [-Wclang-format-violations]
+android_glut_fonts.c:61:29: error: code should be clang-formatted [-Wclang-format-violations]
+android_glut_fonts.c:62:29: error: code should be clang-formatted [-Wclang-format-violations]
+android_glut_fonts.c:63:28: error: code should be clang-formatted [-Wclang-format-violations]
+android_glut_fonts.c:64:28: error: code should be clang-formatted [-Wclang-format-violations]
+android_glut_fonts.c:65:28: error: code should be clang-formatted [-Wclang-format-violations]
+##[error]Process completed with exit code 1.
+```
+
+Causa: a coluna de substituição das macros GLUT não estava alinhada. Foram corrigidos os formatos das declarações de structs, das variáveis globais, da chamada glBitmap e das macros. Commits: 4212631dd58da77e99b9dd32be4e278e3cfd38f2 e d4cff2f35d9f926521a2bc8d666b01deb3de8e0d. O novo check de clang-format está na fila (run 38708542375); ainda não confirmar como resolvido até ele passar.
+
+### Estado no último registo
+
+- Workflow Android Tablet APK para o commit d4cff2f: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708542286 (queued).
+- O último erro fatal de compilação observado foi o #error "unknown platform!" em tgl.cpp:665 no run 38707636719. O ramo Android foi adicionado no commit 319fbfc; ainda falta o resultado de um build completo no commit atual.
+- Nenhum APK foi confirmado como artefacto. O workflow só publica o APK se a compilação C++ original e o empacotamento androiddeployqt forem bem-sucedidos.
