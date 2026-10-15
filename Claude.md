@@ -1801,3 +1801,29 @@ Causa: a coluna de substituição das macros GLUT não estava alinhada. Foram co
 - Workflow Android Tablet APK para o commit d4cff2f: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708542286 (queued).
 - O último erro fatal de compilação observado foi o #error "unknown platform!" em tgl.cpp:665 no run 38707636719. O ramo Android foi adicionado no commit 319fbfc; ainda falta o resultado de um build completo no commit atual.
 - Nenhum APK foi confirmado como artefacto. O workflow só publica o APK se a compilação C++ original e o empacotamento androiddeployqt forem bem-sucedidos.
+
+
+## 2026-10-15 — novo erro C++ após ultrapassar tgl.cpp
+
+### Run observado
+- Workflow: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708542286
+- O CMake configurou com sucesso e a compilação do target original começou.
+- A etapa C++ falhou em `toonz/sources/common/tvrender/qtofflinegl.cpp`; por isso as etapas de JDK, empacotamento e upload de APK foram ignoradas. O único artefacto publicado nesse run contém logs de diagnóstico, não um APK.
+
+### Erros exatos
+```text
+qtofflinegl.cpp:193:32: error: incomplete type 'QThread' named in nested name specifier
+qtofflinegl.cpp:203:29: error: incomplete type 'QThread' named in nested name specifier
+qtofflinegl.cpp:241:50: error: calling 'toImage' with incomplete return type 'QImage'
+```
+
+### Correção aplicada
+O ficheiro usava `QThread::currentThreadId()`, `QThread::currentThread()` e `QOpenGLFramebufferObject::toImage()` sem incluir as definições completas dos tipos. Foi acrescentado:
+```cpp
+#include <QImage>
+#include <QThread>
+```
+Commit da correção: https://github.com/layouter787-source/Open-toonz-mobile-/commit/cf453afcf33c2c5a215b8f055c92db14122cce80
+
+### Próxima ação obrigatória
+A alteração dispara uma nova execução do workflow. Consultar o run novo e corrigir o próximo erro fatal real a partir dos logs. Ainda não há APK compilado, empacotado ou testado num tablet; não declarar sucesso até isso acontecer.
