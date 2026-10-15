@@ -262,3 +262,48 @@ Não confundir estes avisos com as falhas fatais de glShaderSource e da ligaçã
 O workflow .github/workflows/android-native-configure.yml atualmente faz upload de android-native-build-logs quando falha. O artefacto do run 38208792779 foi confirmado com esse nome. O workflow não cria APK: compila apenas o target CMake OpenToonz. É necessário desenvolver uma fase separada de empacotamento Qt Android depois de o target original compilar e ligar corretamente.
 
 **Instrução explícita:** o trabalho prioritário é corrigir os erros reais descritos acima no OpenToonz original. Não redesenhar a aplicação, não criar editor substituto, não declarar o projeto pronto por ter configurado CMake.
+
+
+## Erros encontrados nos workflows — 2026-10-15
+
+Este registo contém apenas falhas e avisos vistos no GitHub Actions. Não atribui autoria às alterações.
+
+### Android Native OpenToonz Configure — falha CMake
+Run: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38696291583
+Job: Configure original OpenToonz target for Android ARM64.
+
+Erro reportado:
+```text
+CMake Error at cmake/AndroidLegacyGL.cmake:204 (list):
+  list index: 1 out of range (-1, 0)
+Call Stack (most recent call first):
+  cmake/AndroidLegacyGL.cmake:219 (opentoonz_android_link_module_graph)
+  CMakeLists.txt:DEFERRED
+```
+
+**Significado:** o CMake tenta ler o segundo elemento de uma lista que não tem um segundo elemento válido. A configuração/generação falha antes da compilação completa do editor. Investigar a lista usada na linha 204 e os dados passados pela chamada na linha 219; os logs confirmam o índice inválido, mas não identificam por si só qual módulo originou a lista incompleta.
+
+### Android Native Graphics Compatibility — mesma falha
+Run: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38696291683
+O workflow gráfico reproduziu o mesmo erro em `AndroidLegacyGL.cmake:204`, com stack na linha 219 e em `CMakeLists.txt:DEFERRED`. Como ambos falham na mesma função, investigar primeiro essa função partilhada, não tratar os resultados como causas independentes.
+
+### Timeout ao descarregar ação Android — aviso de rede separado
+Nos logs de preparação apareceu:
+```text
+Failed to download action 'https://codeload.github.com/android-actions/setup-android/tar.gz/be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd'.
+Error: The request was canceled due to the configured HttpClient.Timeout of 100 seconds elapsing.
+```
+O runner excedeu 100 segundos ao descarregar `android-actions/setup-android`. Isto indica um timeout de transferência/rede; não há evidência de que tenha causado o erro CMake de índice inválido. Se reaparecer, verificar a repetição do job e a disponibilidade do download.
+
+### Android Tablet Port Audit — passou, mas não é build
+Run: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38696291630
+A auditoria estática passou. Isso não comprova configuração CMake, compilação/ligação C++ nem geração de APK.
+
+### Estado confirmado nesta verificação
+- Configure Android: falhou com índice de lista inválido em `AndroidLegacyGL.cmake:204`.
+- Compatibilidade gráfica Android: falhou com o mesmo erro.
+- Auditoria Android: passou, apenas auditoria estática.
+- Timeout de download da ação Android: observado, separado do erro CMake.
+- Nenhum APK foi confirmado por estes workflows.
+
+**Próxima ação:** corrigir a causa da lista incompleta em `AndroidLegacyGL.cmake`, repetir os dois workflows Android e registar os novos resultados. Não declarar sucesso sem confirmação dos jobs.
