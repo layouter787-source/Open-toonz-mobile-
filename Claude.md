@@ -1742,3 +1742,29 @@ gmake: *** [Makefile:411: OpenToonz] Error 2
 - O resultado da compilação deve ser revisto para verificar se desapareceram os erros anteriores de `tfarm`/símbolos indefinidos e `sys/dir.h`, e para registar os próximos erros reais caso apareçam.
 
 Não marcar a portabilidade Android como concluída até o workflow gerar um APK, validar o artefacto e permitir instalação/teste num tablet ARM64 real.
+
+
+## 2026-10-15 — segundo ciclo de compilação Android
+
+### Erro fatal novo (run 38707636719)
+
+```text
+/home/runner/work/Open-toonz-mobile-/Open-toonz-mobile-/toonz/sources/common/tgl/tgl.cpp:665:2: error: "unknown platform!"
+gmake[3]: *** [tnzcore/CMakeFiles/tnzcore.dir/build.make:709: toonz/sources/common/tgl/tgl.cpp.o] Error 1
+gmake[2]: *** [CMakeFiles/Makefile2:700: tnzcore/CMakeFiles/tnzcore.dir/all] Error 2
+gmake[1]: *** [CMakeFiles/Makefile2:1312: toonz/CMakeFiles/OpenToonz.dir/rule] Error 2
+gmake: *** [Makefile:411: OpenToonz] Error 2
+```
+
+Causa: tgl.cpp não incluía __ANDROID__ / Q_OS_ANDROID na seleção da implementação de contexto GL. O bloco terminava no #error "unknown platform!". Correção aplicada no commit 319fbfc745bc505141a94eab0b35e7e9d06fcf60: incluir Android na seleção do bloco Qt QGLContext e na seleção de plataforma que implementa tglGetCurrentContext, tglMakeCurrent e tglDoneCurrent. Ainda precisa de CI para confirmar que o próximo bloqueio é ultrapassado.
+
+### Verificação de formatação
+
+O run 38707636717 de clang-format falhou nas alterações anteriores de tenv.cpp com as mensagens code should be clang-formatted [-Wclang-format-violations] em 688, 697 e 745. Foram ajustadas as quebras de linha das expressões relativePath e sourcePath no commit 12cc2de7e027fe6dcac98e8b6ff532d6c1c35035. O novo workflow clang-format ainda está em execução; confirmar o resultado antes de fechar este item.
+
+### Execução atual
+
+- APK workflow no commit com as correções: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708126068
+- Run duplicado no mesmo commit: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708129179
+- No momento do registo, o run estava na preparação do Android SDK; nenhum APK foi produzido/confirmado.
+- Os erros anteriores de ligação de tfarm e sys/dir.h ainda precisam de ser reavaliados depois que a compilação passar de tgl.cpp; a falha atual interrompeu o build antes de confirmar essas correções.
