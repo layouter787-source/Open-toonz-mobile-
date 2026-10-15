@@ -27,7 +27,7 @@
 #endif
 #endif
 
-#if defined(MACOSX) || defined(LINUX) || defined(FREEBSD) || defined(HAIKU)
+#if defined(MACOSX) || defined(LINUX) || defined(FREEBSD) || defined(HAIKU) || defined(Q_OS_ANDROID) || defined(__ANDROID__)
 #include <QGLContext>
 #endif
 
@@ -640,7 +640,7 @@ void tglMakeCurrent(TGlContext context) {
 
 void tglDoneCurrent(TGlContext) { wglMakeCurrent(NULL, NULL); }
 
-#elif defined(LINUX) || defined(FREEBSD) || defined(__sgi) || defined(MACOSX) || defined(HAIKU)
+#elif defined(LINUX) || defined(FREEBSD) || defined(__sgi) || defined(MACOSX) || defined(HAIKU) || defined(Q_OS_ANDROID) || defined(__ANDROID__)
 
 TGlContext tglGetCurrentContext() {
   return reinterpret_cast<TGlContext>(
