@@ -1723,3 +1723,22 @@ gmake: *** [Makefile:411: OpenToonz] Error 2
 - O conflito `glShaderSource` e os símbolos indefinidos de `tnzbase` pertencem ao log anterior que conseguiu avançar até à compilação/ligação. Como a configuração atual falha antes dessa fase, ainda não está demonstrado se esses problemas antigos foram resolvidos.
 - `TPixelRGBM64` e `QMutex` aparecem no run anterior; o run posterior avançou além deles, pelo que devem ser tratados como erros históricos aparentemente ultrapassados, não como falhas atuais confirmadas.
 - Warnings CMake/Node/NDK são distinguidos das mensagens fatais; nem todos os avisos provocam a falha.
+
+
+## 2026-10-15 — correções aplicadas e workflow de APK
+
+### Correções de código feitas nesta sessão
+
+1. `toonz/sources/common/tsystem/tpluginmanager.cpp`: o include de `sys/dir.h` foi excluído para Android; o Android usa `dirent.h`. O identificador de extensão de plugin `.so` também passou a reconhecer `__ANDROID__`. Commit: `55f108fa12c17219935f0d652b31ce15859979cb`.
+2. `toonz/sources/toonzfarm/tfarm/CMakeLists.txt`: foi adicionada uma ramificação Android que liga `tfarm` diretamente aos targets `tnzcore`, `tnzbase`, `toonzlib` e `tnzext`, em vez de depender de caminhos de bibliotecas do host. Isto visa os símbolos não resolvidos observados no run `38704535097`; só o novo CI poderá confirmar se resolve todos. Commit: `98f2129ef9e05e15b070c3dbcbc26d6e6e2186a3`.
+3. `.github/workflows/android-native-configure.yml`: passou a chamar-se **Android Tablet APK (OpenToonz ARM64)** e, depois de compilar o target original, tenta empacotar com Qt 5.15 `androiddeployqt`, JDK 11, valida o ZIP do APK, recolhe metadados e publica o artefacto `ToonzTab-tablet-arm64-debug-apk`. Commit: `5b1f65975d37c35ffa9d3b3b22954e4ee54c9536`.
+
+### Validação pendente
+
+- Run do workflow de APK: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38707636719
+- Run duplicado acionado por pull request: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38707630469
+- No momento deste registo, o run principal estava a compilar o target C++ original; nenhum artefacto APK foi confirmado.
+- A verificação clang-format falhou no commit `5b1f659` por alterações anteriores em `toonz/sources/common/tapptools/tenv.cpp`, linhas 688, 697 e 745. As mensagens são: `code should be clang-formatted [-Wclang-format-violations]`. Ainda não foi corrigido neste registo.
+- O resultado da compilação deve ser revisto para verificar se desapareceram os erros anteriores de `tfarm`/símbolos indefinidos e `sys/dir.h`, e para registar os próximos erros reais caso apareçam.
+
+Não marcar a portabilidade Android como concluída até o workflow gerar um APK, validar o artefacto e permitir instalação/teste num tablet ARM64 real.
