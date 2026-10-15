@@ -63,10 +63,10 @@ void *glutBitmapTimesRoman24  = 0;
 void *glutBitmapHelvetica10   = 0;
 void *glutBitmapHelvetica12   = 0;
 void *glutBitmapHelvetica18   = 0;
-#define GLUT_STROKE_ROMAN ((void *)&glutStrokeRoman)
-#define GLUT_STROKE_MONO_ROMAN ((void *)&glutStrokeMonoRoman)
-#define GLUT_BITMAP_9_BY_15 ((void *)&glutBitmap9By15)
-#define GLUT_BITMAP_8_BY_13 ((void *)&glutBitmap8By13)
+#define GLUT_STROKE_ROMAN        ((void *)&glutStrokeRoman)
+#define GLUT_STROKE_MONO_ROMAN   ((void *)&glutStrokeMonoRoman)
+#define GLUT_BITMAP_9_BY_15      ((void *)&glutBitmap9By15)
+#define GLUT_BITMAP_8_BY_13      ((void *)&glutBitmap8By13)
 #define GLUT_BITMAP_TIMES_ROMAN_10 ((void *)&glutBitmapTimesRoman10)
 #define GLUT_BITMAP_TIMES_ROMAN_24 ((void *)&glutBitmapTimesRoman24)
 #define GLUT_BITMAP_HELVETICA_10 ((void *)&glutBitmapHelvetica10)
