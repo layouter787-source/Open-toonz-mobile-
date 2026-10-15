@@ -36,3 +36,10 @@ Nenhum APK existe; a auditoria estatica aprovada nao e compilacao Android.
 - O workflow principal foi convertido em `Android Tablet APK (OpenToonz ARM64)`: compila o target original e tenta empacotar com `androiddeployqt`, verificando e publicando o APK como artefacto (commit `5b1f659`).
 - Execução a acompanhar: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38707636719 . No momento deste registo, a compilação C++ estava em curso; APK ainda não confirmado.
 - Bloqueio separado: clang-format falhou em `toonz/sources/common/tapptools/tenv.cpp` (linhas 688, 697 e 745), com mensagens `code should be clang-formatted`. Ainda por corrigir.
+
+
+## 2026-10-15 — erro de plataforma GL e correção
+
+- A compilação do run 38707636719 parou em toonz/sources/common/tgl/tgl.cpp:665 com error: "unknown platform!", porque o bloco de implementação do contexto GL não incluía Android. Correção aplicada no commit 319fbfc adicionando Q_OS_ANDROID / __ANDROID__ ao ramo de contexto Qt.
+- Foram ajustadas duas quebras de linha em tenv.cpp para resolver clang-format (commit 12cc2de); o resultado da nova verificação ainda está pendente.
+- Novo workflow APK: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38708126068 . Nenhum APK verificado até este registo.
