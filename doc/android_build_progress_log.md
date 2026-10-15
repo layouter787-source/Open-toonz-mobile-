@@ -27,3 +27,12 @@ Aparecem cerca de 70 vezes no anexo do run 38699134024. Pela redacao padrao do C
 - Proximos bloqueios previsiveis (por analise do codigo, nao por log): bibliotecas de terceiros para ARM64 (JPEG, LZ4, zlib, TIFF, PNG, SuperLU, OpenBLAS, MyPaint), porque `tnzcore`, `tnzext`, `image` e outros so as ligam em ramos desktop; `toonzqt` ainda nao foi revisto.
 
 Nenhum APK existe; a auditoria estatica aprovada nao e compilacao Android.
+
+
+## 2026-10-15 — correções e workflow de APK
+
+- Corrigido o include de `sys/dir.h` em Android e o reconhecimento de extensões de plugins `.so` em `tpluginmanager.cpp` (commit `55f108f`).
+- Adicionada ligação de `tfarm` a targets nativos OpenToonz no ramo Android para tratar símbolos não resolvidos vistos em CI (commit `98f2129`).
+- O workflow principal foi convertido em `Android Tablet APK (OpenToonz ARM64)`: compila o target original e tenta empacotar com `androiddeployqt`, verificando e publicando o APK como artefacto (commit `5b1f659`).
+- Execução a acompanhar: https://github.com/layouter787-source/Open-toonz-mobile-/actions/runs/38707636719 . No momento deste registo, a compilação C++ estava em curso; APK ainda não confirmado.
+- Bloqueio separado: clang-format falhou em `toonz/sources/common/tapptools/tenv.cpp` (linhas 688, 697 e 745), com mensagens `code should be clang-formatted`. Ainda por corrigir.
